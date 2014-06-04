@@ -1,10 +1,26 @@
 # Introduction
 
-ofxCvMin is a combination of the minimal utility functions from Kyle McDonald's ofxCv (https://github.com/kylemcdonald/ofxCv/) and up to date OpenCV libs built for c++11.
+ofxCvMin began with:
+
+* Modern OpenCv libs
+* C++11 support on OSX
+* Utility functions from Kyle McDonald's ofxCv (https://github.com/kylemcdonald/ofxCv/)
+
+The aims of this addon are to:
+
+* Be minimal (no significant helper classes)
+* Be fast (optimised casting between oF and cv)
+* Give you a working OpenCV environment with the least fuss
+
+Currently I'm working with:
+* XCode 5
+* Visual Studio 2012
 
 This addon does not require ofxOpenCv. 
 
-This addon will become less useful when a proper c++11 release of oF arrives.
+## Side note
+
+This addon may become less useful when a proper c++11 release of oF arrives.
 
 # Notes to self
 
