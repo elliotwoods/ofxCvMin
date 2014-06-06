@@ -7,7 +7,7 @@
 #include <stdint.h>
 #endif
 
-#define OFXCV_MATCHED_TYPE_OF_CV(X, Y) \
+#define OFXCV_MATCHED_TYPE_OF_CV_BODY(X, Y) \
 Y & toCv(X & x) { \
 return * (Y *) & x; \
 } \
@@ -19,13 +19,13 @@ namespace ofxCv {
 	
 	using namespace cv;
 
-	OFXCV_MATCHED_TYPE_OF_CV(ofVec2f, Point2f);
-	OFXCV_MATCHED_TYPE_OF_CV(ofVec3f, Point3f);
-	OFXCV_MATCHED_TYPE_OF_CV(vector<ofVec2f>, vector<Point2f>);
-	OFXCV_MATCHED_TYPE_OF_CV(vector<ofVec3f>, vector<Point3f>);
-	OFXCV_MATCHED_TYPE_OF_CV(vector<vector<ofVec2f> >, vector<vector<Point2f> >);
-	OFXCV_MATCHED_TYPE_OF_CV(vector<vector<ofVec3f> >, vector<vector<Point3f> >);
-	OFXCV_MATCHED_TYPE_OF_CV(ofColor, cv::Scalar);
+	OFXCV_MATCHED_TYPE_OF_CV_BODY(ofVec2f, Point2f);
+	OFXCV_MATCHED_TYPE_OF_CV_BODY(ofVec3f, Point3f);
+	OFXCV_MATCHED_TYPE_OF_CV_BODY(vector<ofVec2f>, vector<Point2f>);
+	OFXCV_MATCHED_TYPE_OF_CV_BODY(vector<ofVec3f>, vector<Point3f>);
+	OFXCV_MATCHED_TYPE_OF_CV_BODY(vector<vector<ofVec2f> >, vector<vector<Point2f> >);
+	OFXCV_MATCHED_TYPE_OF_CV_BODY(vector<vector<ofVec3f> >, vector<vector<Point3f> >);
+	OFXCV_MATCHED_TYPE_OF_CV_BODY(ofColor, cv::Scalar);
 	
 	Mat toCv(Mat& mat) {
 		return mat;

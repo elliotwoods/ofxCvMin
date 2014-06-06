@@ -144,15 +144,16 @@ namespace ofxCv {
 	// as either type. in this case, we list the matched types here (of on left,
 	// cv on right), and generate casting toOf(..) and toCv(..) functions.
 #define OFXCV_MATCHED_TYPE_OF_CV_HEADER(X, Y) \
-Y & toCv(X & x);\
-X & toOf(Y & y);
-	OFXCV_MATCHED_TYPE_OF_CV(ofVec2f, cv::Point2f);
-	OFXCV_MATCHED_TYPE_OF_CV(ofVec3f, cv::Point3f);
-	OFXCV_MATCHED_TYPE_OF_CV(vector<ofVec2f>, vector<cv::Point2f>);
-	OFXCV_MATCHED_TYPE_OF_CV(vector<ofVec3f>, vector<cv::Point3f>);
-	OFXCV_MATCHED_TYPE_OF_CV(vector<vector<ofVec2f> >, vector<vector<cv::Point2f> >);
-	OFXCV_MATCHED_TYPE_OF_CV(vector<vector<ofVec3f> >, vector<vector<cv::Point3f> >);
-	OFXCV_MATCHED_TYPE_OF_CV(ofColor, cv::Scalar);
+Y & toCv(X &);\
+X & toOf(Y &);
+
+	OFXCV_MATCHED_TYPE_OF_CV_HEADER(ofVec2f, Point2f);
+	OFXCV_MATCHED_TYPE_OF_CV_HEADER(ofVec3f, Point3f);
+	OFXCV_MATCHED_TYPE_OF_CV_HEADER(vector<ofVec2f>, vector<Point2f>);
+	OFXCV_MATCHED_TYPE_OF_CV_HEADER(vector<ofVec3f>, vector<Point3f>);
+	OFXCV_MATCHED_TYPE_OF_CV_HEADER(vector<vector<ofVec2f> >, vector<vector<Point2f> >);
+	OFXCV_MATCHED_TYPE_OF_CV_HEADER(vector<vector<ofVec3f> >, vector<vector<Point3f> >);
+	OFXCV_MATCHED_TYPE_OF_CV_HEADER(ofColor, Scalar);
 	
 	// toCv functions
 	// for conversion functions, the signature reveals the behavior:

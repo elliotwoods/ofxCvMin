@@ -20,20 +20,51 @@ namespace ofxCv {
 											 tm[0], tm[1], tm[2], 1.0f);
 	}
 	
-	vector<Point3f> makeBoardPoints(cv::Size size, float spacing, bool centered) {
-		vector<Point3f> corners;
+	vector<Point3f> makeCheckerboardPoints(cv::Size size, float spacing, bool centered) {
+		vector<ofVec3f> corners;
 		
-		Point3f center;
+		ofVec3f center;
 		if (centered) {
-			center = Point3f(size.width, size.height, 0) * spacing * 0.5f;
+			center = ofVec3f(size.width, size.height, 0) * spacing * 0.5f;
 		}
 		
 		for(int i=0; i<size.width; i++) {
 			for(int j=0; j<size.height; j++) {
-				corners.push_back(Point3f(i, j, 0) * spacing + center);
+				corners.push_back(ofVec3f(i, j, 0) * spacing - center);
 			}
 		}
-		return corners;
+		return toCv(corners);
+	}
+
+	ofMesh makeCheckerboardMesh(cv::Size size, float spacing, bool centered) {
+		ofMesh mesh;
+
+		ofVec3f center;
+		if (centered) {
+			center = ofVec3f(size.width, size.height, 0) * spacing * 0.5f;
+		}
+		
+		for(int i=0; i<size.width - 1; i++) {
+			for(int j=0; j<size.height - 1; j++) {
+				auto black = i % 2 == j % 2;
+				auto topLeft = ofVec3f(i, j, 0) * spacing - center;
+				
+				mesh.addVertex(topLeft);
+				mesh.addVertex(topLeft + ofVec3f(0, spacing, 0));
+				mesh.addVertex(topLeft + ofVec3f(spacing, 0, 0));
+
+				mesh.addVertex(topLeft + ofVec3f(spacing, 0, 0));
+				mesh.addVertex(topLeft + ofVec3f(0, spacing, 0));
+				mesh.addVertex(topLeft + ofVec3f(spacing, spacing, 0));
+
+				for(int c=0; c<6; c++) {
+					mesh.addColor(ofFloatColor(black ? 0.0f : 255.0f));
+				}
+			}
+		}
+
+		mesh.setMode(ofPrimitiveMode::OF_PRIMITIVE_TRIANGLES);
+		return mesh;
 	}
 	
 	void drawMat(Mat& mat, float x, float y) {

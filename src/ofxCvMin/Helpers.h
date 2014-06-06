@@ -15,8 +15,9 @@ namespace ofxCv {
 	ofMatrix4x4 makeMatrix(Mat rotation, Mat translation);
 	void applyMatrix(const ofMatrix4x4& matrix);
 	
-	vector<Point3f> makeBoardPoints(cv::Size size, float spacing, bool centered = true);
-	
+	vector<Point3f> makeCheckerboardPoints(cv::Size size, float spacing, bool centered = true);
+	ofMesh makeCheckerboardMesh(cv::Size size, float spacing, bool centered = true);
+
 	void drawMat(Mat& mat, float x, float y);
 	void drawMat(Mat& mat, float x, float y, float width, float height);
 	
