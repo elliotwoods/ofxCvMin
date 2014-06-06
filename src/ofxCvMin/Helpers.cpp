@@ -41,11 +41,11 @@ namespace ofxCv {
 
 		ofVec3f center;
 		if (centered) {
-			center = ofVec3f(size.width, size.height, 0) * spacing * 0.5f;
+			center = ofVec3f(size.width + 1, size.height + 1, 0) * spacing * 0.5f;
 		}
 		
-		for(int i=0; i<size.width - 1; i++) {
-			for(int j=0; j<size.height - 1; j++) {
+		for(int i=0; i<size.width + 1; i++) {
+			for(int j=0; j<size.height + 1; j++) {
 				auto black = i % 2 == j % 2;
 				auto topLeft = ofVec3f(i, j, 0) * spacing - center;
 				
