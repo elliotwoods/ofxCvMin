@@ -373,5 +373,5 @@ cv::name(xMat, yMat, resultMat);\
 	ofMatrix4x4 estimateAffine3D(vector<ofVec3f>& from, vector<ofVec3f>& to, float accuracy = .99);
 	ofMatrix4x4 estimateAffine3D(vector<ofVec3f>& from, vector<ofVec3f>& to, vector<unsigned char>& outliers, float accuracy = .99);
 	
-	bool findChessboardCornersPreTest(cv::Mat image, cv::Size patternSize, vector<cv::Point2f> & corners);
+	bool findChessboardCornersPreTest(cv::Mat image, cv::Size patternSize, vector<cv::Point2f> & corners, int testResolution = 512);
 }

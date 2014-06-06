@@ -121,17 +121,16 @@ namespace ofxCv {
 		return affine4x4;
 	}
 	
-	bool findChessboardCornersPreTest(cv::Mat image, cv::Size patternSize, vector<cv::Point2f> & corners) {
-		const int testRes = 1024;
-		if (image.rows > testRes || image.cols > testRes) {
+	bool findChessboardCornersPreTest(cv::Mat image, cv::Size patternSize, vector<cv::Point2f> & corners, int testResolution) {
+		if (image.rows > testResolution || image.cols > testResolution) {
 			cv::Mat lowRes;
-			cv::resize(image, lowRes, cv::Size(testRes, testRes));
+			cv::resize(image, lowRes, cv::Size(testResolution, testResolution));
 			vector<cv::Point2f> lowResPoints;
 			if (cv::findChessboardCorners(lowRes, patternSize, lowResPoints)) {
 				int maxX = 0;
 				int maxY = 0;
-				int minX = testRes;
-				int minY = testRes;
+				int minX = testResolution;
+				int minY = testResolution;
 				
 				//find bounding box (roi) of found board
 				for(auto & lowResPoint : lowResPoints) {
@@ -150,10 +149,10 @@ namespace ofxCv {
 				}
 				
 				//move these coords into original image space
-				maxX = maxX * image.cols / testRes;
-				maxY = maxY * image.rows / testRes;
-				minX = minX * image.cols / testRes;
-				minY = minY * image.rows / testRes;
+				maxX = maxX * image.cols / testResolution;
+				maxY = maxY * image.rows / testResolution;
+				minX = minX * image.cols / testResolution;
+				minY = minY * image.rows / testResolution;
 				
 				//create a buffer around found points by 1 square size
 				int boardResolutionMin = MIN(patternSize.width, patternSize.height);
