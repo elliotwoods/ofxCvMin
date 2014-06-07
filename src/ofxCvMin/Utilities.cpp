@@ -11,9 +11,15 @@
 Y & toCv(X & x) { \
 return * (Y *) & x; \
 } \
+const Y & toCv(const X & x) { \
+return * (const Y *) & x; \
+} \
 X & toOf(Y & y) { \
 return * (X *) & y; \
-}
+} \
+const X & toOf(const Y & y) { \
+return * (const X *) & y; \
+} 
 
 namespace ofxCv {
 	

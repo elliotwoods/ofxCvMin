@@ -145,7 +145,9 @@ namespace ofxCv {
 	// cv on right), and generate casting toOf(..) and toCv(..) functions.
 #define OFXCV_MATCHED_TYPE_OF_CV_HEADER(X, Y) \
 Y & toCv(X &);\
-X & toOf(Y &);
+const Y & toCv(const X &);\
+X & toOf(Y &);\
+const X & toOf(const Y &);
 
 	OFXCV_MATCHED_TYPE_OF_CV_HEADER(ofVec2f, Point2f);
 	OFXCV_MATCHED_TYPE_OF_CV_HEADER(ofVec3f, Point3f);

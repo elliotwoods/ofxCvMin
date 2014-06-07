@@ -19,6 +19,23 @@ namespace ofxCv {
 											 rm[2], rm[5], rm[8], 0.0f,
 											 tm[0], tm[1], tm[2], 1.0f);
 	}
+
+	ofMatrix4x4 makeProjectionMatrix(Mat cameraMatrix, cv::Size imageSize) {
+		float fovx = cameraMatrix.at<double>(0, 0);
+		float fovy = cameraMatrix.at<double>(1, 1);
+		float ppx = cameraMatrix.at<double>(0, 2);
+		float ppy = cameraMatrix.at<double>(1, 2);
+
+		ofMatrix4x4 projection;
+		projection(0,0) = fovx / (float) imageSize.width;
+		projection(1,1) = - fovy / (float) imageSize.height;
+		projection(3,0) = (ppx / (float) imageSize.width) - 0.5f;
+		projection(3,1) = 0.5f - (ppy / (float) imageSize.height);
+		projection(2,3) = 1.0f;
+		projection(3,3) = 0.0f;
+
+		return projection;
+	}
 	
 	vector<Point3f> makeCheckerboardPoints(cv::Size size, float spacing, bool centered) {
 		vector<ofVec3f> corners;
@@ -28,8 +45,8 @@ namespace ofxCv {
 			center = ofVec3f(size.width, size.height, 0) * spacing * 0.5f;
 		}
 		
-		for(int i=0; i<size.width; i++) {
-			for(int j=0; j<size.height; j++) {
+		for(int j=0; j<size.height; j++) {
+			for(int i=0; i<size.width; i++) {
 				corners.push_back(ofVec3f(i, j, 0) * spacing - center);
 			}
 		}
