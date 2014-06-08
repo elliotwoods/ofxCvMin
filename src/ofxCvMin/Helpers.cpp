@@ -29,10 +29,11 @@ namespace ofxCv {
 		ofMatrix4x4 projection;
 		projection(0,0) = fovx / (float) imageSize.width;
 		projection(1,1) = - fovy / (float) imageSize.height;
-		projection(3,0) = (ppx / (float) imageSize.width) - 0.5f;
-		projection(3,1) = 0.5f - (ppy / (float) imageSize.height);
 		projection(2,3) = 1.0f;
 		projection(3,3) = 0.0f;
+
+		//not 100% sure the x should be + or -. y is right
+		projection.postMultTranslate(0.5f - (ppx / (float) imageSize.width), 0.5f - (ppy / (float) imageSize.height), 0.0f);
 
 		return projection;
 	}
