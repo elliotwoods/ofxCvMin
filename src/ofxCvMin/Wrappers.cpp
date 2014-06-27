@@ -206,4 +206,13 @@ namespace ofxCv {
 			return findChessboardCorners(image, patternSize, corners);
 		}
 	}
+
+	ofVec2f undistortPoint(const ofVec2f & distortedPoint, cv::Mat cameraMatrix, cv::Mat distotionCoefficients) {
+		vector<Point2f> distortedPoints(1, toCv(distortedPoint));
+		vector<Point2f> undistortedPoints(1);
+
+		cv::undistortPoints(distortedPoints, undistortedPoints, cameraMatrix, distotionCoefficients);
+
+		return toOf(undistortedPoints[0]);
+	}
 }
