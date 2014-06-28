@@ -27,8 +27,8 @@ namespace ofxCv {
 		float ppy = cameraMatrix.at<double>(1, 2);
 
 		ofMatrix4x4 projection;
-		projection(0,0) = fovx / (float) imageSize.width;
-		projection(1,1) = - fovy / (float) imageSize.height;
+		projection(0,0) = 2.0f * fovx / (float) imageSize.width;
+		projection(1,1) = - 2.0f * fovy / (float) imageSize.height;
 		projection(2,3) = 1.0f;
 		projection(3,3) = 0.0f;
 
