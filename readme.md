@@ -4,14 +4,15 @@ ofxCvMin began with:
 
 * Modern OpenCv libs
 * C++11 support on OSX
-* Utility functions from Kyle McDonald's ofxCv (https://github.com/kylemcdonald/ofxCv/)
+* Utility and Wrapper functions from Kyle McDonald's ofxCv (https://github.com/kylemcdonald/ofxCv/) (although many have been removed / changed signifcantly. Compatability is not expected)
 
 The aims of this addon are to:
 
 * Be minimal (no significant helper classes)
-* Be fast (optimised casting between oF and cv)
+* Be fast and convenient (equivalence types, e.g. ofVec2f and cv::Point2f are convertible by refernce without copy)
 * Give you a working OpenCV environment with the least fuss
-
+* Provide some commonly used helper functions
+* 
 Currently I'm working with:
 * XCode 5
 * Visual Studio 2012
