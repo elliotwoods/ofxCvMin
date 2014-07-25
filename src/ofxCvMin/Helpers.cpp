@@ -33,7 +33,6 @@ namespace ofxCv {
 		projection(2,3) = 1.0f;
 		projection(3,3) = 0.0f;
 
-		//not 100% sure the x should be + or -. y is right
 		const ofVec3f lensOffset(2 * (ppx / (float) imageSize.width) - 1.0f, 1.0f - 2 * (ppy / (float) imageSize.height), 0.0f);
 		projection.postMultTranslate(lensOffset);
 
