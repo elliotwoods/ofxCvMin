@@ -20,6 +20,7 @@ namespace ofxCv {
 											 tm[0], tm[1], tm[2], 1.0f);
 	}
 
+	//a reference : http://strawlab.org/2011/11/05/augmented-reality-with-OpenGL/#the_opengl_projection_matrix_from_hz_intrinsic_parameters
 	ofMatrix4x4 makeProjectionMatrix(Mat cameraMatrix, cv::Size imageSize) {
 		float fovx = cameraMatrix.at<double>(0, 0);
 		float fovy = cameraMatrix.at<double>(1, 1);
@@ -27,13 +28,13 @@ namespace ofxCv {
 		float ppy = cameraMatrix.at<double>(1, 2);
 
 		ofMatrix4x4 projection;
-		projection(0,0) = fovx / (float) imageSize.width;
-		projection(1,1) = - fovy / (float) imageSize.height;
+		projection(0,0) = 2.0f * fovx / (float) imageSize.width;
+		projection(1,1) = - 2.0f * fovy / (float) imageSize.height;
 		projection(2,3) = 1.0f;
 		projection(3,3) = 0.0f;
 
-		//not 100% sure the x should be + or -. y is right
-		projection.postMultTranslate(0.5f - (ppx / (float) imageSize.width), 0.5f - (ppy / (float) imageSize.height), 0.0f);
+		const ofVec3f lensOffset(2 * (ppx / (float) imageSize.width) - 1.0f, 1.0f - 2 * (ppy / (float) imageSize.height), 0.0f);
+		projection.postMultTranslate(lensOffset);
 
 		return projection;
 	}
