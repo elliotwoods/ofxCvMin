@@ -202,6 +202,9 @@ namespace ofxCv {
 					return false;
 				}
 			}
+			else {
+				return false;
+			}
 		} else {
 			return findChessboardCorners(image, patternSize, corners);
 		}
