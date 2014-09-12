@@ -378,6 +378,6 @@ cv::name(xMat, yMat, resultMat);\
 
 	ofVec2f undistortPoint(const ofVec2f &, cv::Mat cameraMatrix, cv::Mat distotionCoefficients);
 
-	float calibrateProjector(cv::Mat cameraMatrix, cv::Mat rotation, cv::Mat translation, vector<ofVec3f> world, vector<ofVec2f> projectorNormalised, int projectorWidth, int projectorHeight, float initialLensOffset, float initialThrowRatio = 1.4f);
+	float calibrateProjector(cv::Mat & cameraMatrixOut, cv::Mat & rotationOut, cv::Mat & translationOut, vector<ofVec3f> world, vector<ofVec2f> projectorNormalised, int projectorWidth, int projectorHeight, float initialLensOffset, float initialThrowRatio = 1.4f);
 	float calibrateProjector(ofMatrix4x4 & viewOut, ofMatrix4x4 & projectionOut, vector<ofVec3f> world, vector<ofVec2f> projectorNormalised, int projectorWidth, int projectorHeight, float initialLensOffset, float initialThrowRatio = 1.4f);
 }

@@ -219,7 +219,7 @@ namespace ofxCv {
 		return toOf(undistortedPoints[0]);
 	}
 
-	float calibrateProjector(cv::Mat cameraMatrix, cv::Mat rotation, cv::Mat translation, vector<ofVec3f> world, vector<ofVec2f> projectorNormalised, int projectorWidth, int projectorHeight, float initialLensOffset, float initialThrowRatio) {
+	float calibrateProjector(cv::Mat & cameraMatrixOut, cv::Mat & rotationOut, cv::Mat & translationOut, vector<ofVec3f> world, vector<ofVec2f> projectorNormalised, int projectorWidth, int projectorHeight, float initialLensOffset, float initialThrowRatio) {
 		vector<cv::Point2f> projector;
 		for (const auto & projectorNormalisedPoint : projectorNormalised) {
 			auto projectorPoint = ofVec2f(
@@ -229,11 +229,11 @@ namespace ofxCv {
 		}
 
 		//we have to intitialise a basic camera matrix for it to start with (this will get changed by the function call calibrateCamera)
-		cameraMatrix = Mat::eye(3, 3, CV_64F);
-		cameraMatrix.at<double>(0, 0) = projectorWidth * initialThrowRatio; // default at 1.4 : 1.0f throw ratio
-		cameraMatrix.at<double>(1, 1) = projectorHeight * initialThrowRatio;
-		cameraMatrix.at<double>(0, 2) = projectorWidth / 2.0f;
-		cameraMatrix.at<double>(1, 2) = projectorHeight * (0.50f + initialLensOffset / 2.0f); // default at 40% lens offset
+		cameraMatrixOut = Mat::eye(3, 3, CV_64F);
+		cameraMatrixOut.at<double>(0, 0) = projectorWidth * initialThrowRatio; // default at 1.4 : 1.0f throw ratio
+		cameraMatrixOut.at<double>(1, 1) = projectorHeight * initialThrowRatio;
+		cameraMatrixOut.at<double>(0, 2) = projectorWidth / 2.0f;
+		cameraMatrixOut.at<double>(1, 2) = projectorHeight * (0.50f - initialLensOffset / 2.0f); // default at 40% lens offset
 
 		//same again for distortion
 		Mat distortionCoefficients = Mat::zeros(5, 1, CV_64F);
@@ -244,11 +244,11 @@ namespace ofxCv {
 
 		float error = cv::calibrateCamera(vector<vector<Point3f>>(1, toCv(world)), vector<vector<Point2f>>(1, projector),
 			cv::Size(projectorWidth, projectorHeight),
-			cameraMatrix, distortionCoefficients,
+			cameraMatrixOut, distortionCoefficients,
 			rotations, translations, flags);
 
-		rotation = rotations[0];
-		translation = translations[0];
+		rotationOut = rotations[0];
+		translationOut = translations[0];
 
 		return error;
 	}
