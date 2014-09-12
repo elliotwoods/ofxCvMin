@@ -77,7 +77,7 @@ namespace ofxCv {
 				mesh.addVertex(topLeft + ofVec3f(spacing, spacing, 0));
 
 				for(int c=0; c<6; c++) {
-					mesh.addColor(ofFloatColor(black ? 0.0f : 255.0f));
+					mesh.addColor(ofFloatColor(black ? 0.0f : 1.0f));
 				}
 			}
 		}
