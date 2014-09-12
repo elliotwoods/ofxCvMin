@@ -218,4 +218,46 @@ namespace ofxCv {
 
 		return toOf(undistortedPoints[0]);
 	}
+
+	float calibrateProjector(cv::Mat cameraMatrix, cv::Mat rotation, cv::Mat translation, vector<ofVec3f> world, vector<ofVec2f> projectorNormalised, int projectorWidth, int projectorHeight, float initialLensOffset, float initialThrowRatio) {
+		vector<cv::Point2f> projector;
+		for (const auto & projectorNormalisedPoint : projectorNormalised) {
+			auto projectorPoint = ofVec2f(
+				ofMap(projectorNormalisedPoint.x, -1, +1, 0, projectorWidth),
+				ofMap(projectorNormalisedPoint.y, -1, +1, 0, projectorHeight));
+			projector.push_back(toCv(projectorPoint));
+		}
+
+		//we have to intitialise a basic camera matrix for it to start with (this will get changed by the function call calibrateCamera)
+		cameraMatrix = Mat::eye(3, 3, CV_64F);
+		cameraMatrix.at<double>(0, 0) = projectorWidth * initialThrowRatio; // default at 1.4 : 1.0f throw ratio
+		cameraMatrix.at<double>(1, 1) = projectorHeight * initialThrowRatio;
+		cameraMatrix.at<double>(0, 2) = projectorWidth / 2.0f;
+		cameraMatrix.at<double>(1, 2) = projectorHeight * (0.50f + initialLensOffset / 2.0f); // default at 40% lens offset
+
+		//same again for distortion
+		Mat distortionCoefficients = Mat::zeros(5, 1, CV_64F);
+
+		vector<Mat> rotations, translations;
+
+		int flags = CV_CALIB_FIX_K1 | CV_CALIB_FIX_K2 | CV_CALIB_FIX_K3 | CV_CALIB_FIX_K4 | CV_CALIB_FIX_K5 | CV_CALIB_FIX_K6 | CV_CALIB_ZERO_TANGENT_DIST | CV_CALIB_USE_INTRINSIC_GUESS;
+
+		float error = cv::calibrateCamera(vector<vector<Point3f>>(1, toCv(world)), vector<vector<Point2f>>(1, projector),
+			cv::Size(projectorWidth, projectorHeight),
+			cameraMatrix, distortionCoefficients,
+			rotations, translations, flags);
+
+		rotation = rotations[0];
+		translation = translations[0];
+
+		return error;
+	}
+
+	float calibrateProjector(ofMatrix4x4 & viewOut, ofMatrix4x4 & projectionOut, vector<ofVec3f> world, vector<ofVec2f> projectorNormalised, int projectorWidth, int projectorHeight, float initialLensOffset, float initialThrowRatio) {
+		cv::Mat cameraMatrix, rotation, translation;
+		float error = calibrateProjector(cameraMatrix, rotation, translation, world, projectorNormalised, projectorWidth, projectorHeight, initialLensOffset, initialThrowRatio);
+		viewOut = makeMatrix(rotation, translation);
+		projectionOut = makeProjectionMatrix(cameraMatrix, cv::Size(projectorWidth, projectorHeight));
+		return error;
+	}
 }
