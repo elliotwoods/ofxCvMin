@@ -31,7 +31,7 @@
 #include "opencv2/opencv.hpp"
 #include "Utilities.h"
 
-namespace ofxCv {
+namespace ofxCvMin {
 	
 	using namespace cv;
 	
@@ -75,7 +75,7 @@ cv::name(xMat, yMat, resultMat);\
 	}
 	
 	template <class SD> void invert(SD& srcDst) {
-		ofxCv::invert(srcDst, srcDst);
+		ofxCvMin::invert(srcDst, srcDst);
 	}
 	
 	// also useful for taking the average/mixing two images
@@ -120,7 +120,7 @@ cv::name(xMat, yMat, resultMat);\
 	// threshold in place
 	template <class SD>
 	void threshold(SD& srcDst, float thresholdValue, bool invert = false) {
-		ofxCv::threshold(srcDst, srcDst, thresholdValue, invert);
+		ofxCvMin::threshold(srcDst, srcDst, thresholdValue, invert);
 	}
 	
 	// erode out of place
@@ -134,7 +134,7 @@ cv::name(xMat, yMat, resultMat);\
 	// erode in place
 	template <class SD>
 	void erode(SD& srcDst, int iterations = 1) {
-		ofxCv::erode(srcDst, srcDst, iterations);
+		ofxCvMin::erode(srcDst, srcDst, iterations);
 	}
 	
 	// dilate out of place
@@ -148,7 +148,7 @@ cv::name(xMat, yMat, resultMat);\
 	// dilate in place
 	template <class SD>
 	void dilate(SD& srcDst, int iterations = 1) {
-		ofxCv::dilate(srcDst, srcDst, iterations);
+		ofxCvMin::dilate(srcDst, srcDst, iterations);
 	}
 	
 	// automatic threshold (grayscale 8-bit only) out of place
@@ -163,7 +163,7 @@ cv::name(xMat, yMat, resultMat);\
 	// automatic threshold (grayscale 8-bit only) in place
 	template <class SD>
 	void autothreshold(SD& srcDst, bool invert = false) {
-		ofxCv::autothreshold(srcDst, srcDst, invert);
+		ofxCvMin::autothreshold(srcDst, srcDst, invert);
 	}
 	
 	// CV_RGB2GRAY, CV_HSV2RGB, etc. with [RGB, BGR, GRAY, HSV, HLS, XYZ, YCrCb, Lab, Luv]
@@ -208,7 +208,7 @@ cv::name(xMat, yMat, resultMat);\
 	// in-place Gaussian blur
 	template <class SD>
 	void blur(SD& srcDst, int size) {
-		ofxCv::blur(srcDst, srcDst, size);
+		ofxCvMin::blur(srcDst, srcDst, size);
 	}
 	
 	// Median blur
@@ -223,7 +223,7 @@ cv::name(xMat, yMat, resultMat);\
 	// in-place Median blur
 	template <class SD>
 	void medianBlur(SD& srcDst, int size) {
-		ofxCv::medianBlur(srcDst, srcDst, size);
+		ofxCvMin::medianBlur(srcDst, srcDst, size);
 	}
 	
 	// histogram equalization, adds support for color images

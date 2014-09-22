@@ -1,7 +1,7 @@
 #include "Helpers.h"
 #include "Utilities.h"
 
-namespace ofxCv {
+namespace ofxCvMin {
 	
 	using namespace cv;
 	
@@ -82,7 +82,7 @@ namespace ofxCv {
 			}
 		}
 
-		mesh.setMode(ofPrimitiveMode::OF_PRIMITIVE_TRIANGLES);
+		mesh.setMode(/*ofPrimitiveMode::*/OF_PRIMITIVE_TRIANGLES);
 		return mesh;
 	}
 	

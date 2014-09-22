@@ -12,7 +12,7 @@
 #include "ofMain.h"
 #include "opencv2/opencv.hpp"
 
-namespace ofxCv {
+namespace ofxCvMin {
 	
 	using namespace cv;
 	
