@@ -8,7 +8,7 @@
 #include "opencv2/opencv.hpp"
 #include "ofMain.h"
 
-namespace ofxCv {
+namespace ofxCvMin {
 	
 	using namespace cv;
 	
@@ -207,7 +207,7 @@ namespace ofxCv {
 	template <class S, class T, class D>
 	float autorotate(S& src, D& dst, float threshold1 = 50, float threshold2 = 200) {
 		Mat thresh;
-		ofxCv::Canny(src, thresh, threshold1, threshold2);
+		ofxCvMin::Canny(src, thresh, threshold1, threshold2);
 		return autorotate(src, thresh, dst);
 	}
 	

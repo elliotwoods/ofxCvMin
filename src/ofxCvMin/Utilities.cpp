@@ -21,7 +21,7 @@ const X & toOf(const Y & y) { \
 return * (const X *) & y; \
 } 
 
-namespace ofxCv {
+namespace ofxCvMin {
 	
 	using namespace cv;
 

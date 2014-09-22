@@ -1,6 +1,6 @@
 #include "Wrappers.h"
 
-namespace ofxCv {
+namespace ofxCvMin {
 	
 	using namespace cv;
 	
