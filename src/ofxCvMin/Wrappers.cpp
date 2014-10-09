@@ -222,7 +222,7 @@ namespace ofxCv {
 		}
 	}
 
-	bool findAsymmetricCirclesCircles(cv::Mat image, cv::Size patternSize, vector<cv::Point2f> & results, float minBlobWidthPct, float maxBlobWidthPct) {
+	bool findAsymmetricCircles(cv::Mat image, cv::Size patternSize, vector<cv::Point2f> & results, float minBlobWidthPct, float maxBlobWidthPct) {
 		float minArea = pow(minBlobWidthPct * image.cols, 2);
 		float maxArea = pow(maxBlobWidthPct * image.cols, 2);
 
@@ -248,8 +248,7 @@ namespace ofxCv {
 		case BoardType::Checkerboard:
 			if (useOptimisers) {
 				return findChessboardCornersPreTest(image, patternSize, results);
-			}
-			else {
+			} else {
 				return findChessboardCorners(image, patternSize, results);
 			}
 			break;
