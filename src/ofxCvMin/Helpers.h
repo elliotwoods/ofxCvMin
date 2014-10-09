@@ -10,6 +10,11 @@
 
 namespace ofxCv {
 	
+	enum BoardType {
+		Checkerboard,
+		AsymmetricCircles
+	};
+
 	using namespace cv;
 	
 	ofMatrix4x4 makeMatrix(Mat rotation, Mat translation);
@@ -18,6 +23,12 @@ namespace ofxCv {
 	
 	vector<Point3f> makeCheckerboardPoints(cv::Size size, float spacing, bool centered = true);
 	ofMesh makeCheckerboardMesh(cv::Size size, float spacing, bool centered = true);
+
+	vector<Point3f> makeAsymmetricCirclePoints(cv::Size size, float spacing, bool centered = true);
+	ofMesh makeAsymmetricCircleMesh(cv::Size size, float spacing, bool centered = true);
+
+	vector<Point3f> makeBoardPoints(BoardType, cv::Size size, float spacing, bool centered = true);
+	ofMesh makeBoardMesh(BoardType, cv::Size, float spacing, bool centered = true);
 
 	void drawMat(Mat& mat, float x, float y);
 	void drawMat(Mat& mat, float x, float y, float width, float height);

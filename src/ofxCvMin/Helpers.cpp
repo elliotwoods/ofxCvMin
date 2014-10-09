@@ -63,18 +63,41 @@ namespace ofxCv {
 			center = ofVec3f(size.width + 1, size.height + 1, 0) * spacing * 0.5f;
 		}
 		
-		for(int i=0; i<size.width + 1; i++) {
+		//board face
+		const auto topLeft = ofVec3f(-1, -1, 0.0f) * spacing - center;
+		const auto topRight = ofVec3f(2 + size.width, -1, 0.0f) * spacing - center;
+		const auto bottomLeft = ofVec3f(-1, size.height + 2, 0.0f) * spacing - center;
+		const auto bottomRight = ofVec3f(2 + size.width, size.height + 2, 0.0f) * spacing - center;
+		
+		mesh.addVertex(bottomLeft);
+		mesh.addVertex(topRight);
+		mesh.addVertex(topLeft);
+
+		mesh.addVertex(bottomRight);
+		mesh.addVertex(topRight);
+		mesh.addVertex(bottomLeft);
+
+		mesh.addColor(ofColor(255));
+		mesh.addColor(ofColor(255));
+		mesh.addColor(ofColor(255));
+
+		mesh.addColor(ofColor(255));
+		mesh.addColor(ofColor(255));
+		mesh.addColor(ofColor(255));
+
+		const auto z = -spacing / 100.0f;
+		for (int i = 0; i<size.width + 1; i++) {
 			for(int j=0; j<size.height + 1; j++) {
 				auto black = i % 2 == j % 2;
-				auto topLeft = ofVec3f(i, j, 0) * spacing - center;
+				auto squareTopLeft = ofVec3f(i, j, z) * spacing - center;
 				
-				mesh.addVertex(topLeft);
-				mesh.addVertex(topLeft + ofVec3f(0, spacing, 0));
-				mesh.addVertex(topLeft + ofVec3f(spacing, 0, 0));
+				mesh.addVertex(squareTopLeft);
+				mesh.addVertex(squareTopLeft + ofVec3f(0, spacing, 0));
+				mesh.addVertex(squareTopLeft + ofVec3f(spacing, 0, 0));
 
-				mesh.addVertex(topLeft + ofVec3f(spacing, 0, 0));
-				mesh.addVertex(topLeft + ofVec3f(0, spacing, 0));
-				mesh.addVertex(topLeft + ofVec3f(spacing, spacing, 0));
+				mesh.addVertex(squareTopLeft + ofVec3f(spacing, 0, 0));
+				mesh.addVertex(squareTopLeft + ofVec3f(0, spacing, 0));
+				mesh.addVertex(squareTopLeft + ofVec3f(spacing, spacing, 0));
 
 				for(int c=0; c<6; c++) {
 					mesh.addColor(ofFloatColor(black ? 0.0f : 1.0f));
@@ -84,6 +107,103 @@ namespace ofxCv {
 
 		mesh.setMode(ofPrimitiveMode::OF_PRIMITIVE_TRIANGLES);
 		return mesh;
+	}
+
+	vector<Point3f> makeAsymmetricCirclePoints(cv::Size size, float spacing, bool centered) {
+		vector<ofVec3f> points;
+
+		ofVec3f center;
+		if (centered) {
+			center = ofVec3f(size.width * 2.0f - 1.0f, size.height - 1.0f, 0) * spacing * 0.5f;
+		}
+
+		for (int j = 0; j<size.height; j++) {
+			for (int i = 0; i<size.width; i++) {
+				points.push_back(ofVec3f(
+					i * 2 + (j % 2),
+					j,
+					0
+					) * spacing - center);
+			}
+		}
+		return toCv(points);
+	}
+
+	ofMesh makeAsymmetricCircleMesh(cv::Size size, float spacing, bool centered) {
+		ofMesh mesh;
+		const auto points = toOf(makeAsymmetricCirclePoints(size, spacing, centered));
+		
+		ofVec3f center;
+		if (centered) {
+			center = ofVec3f(size.width * 2.0f, size.height, 0) * spacing * 0.5f;
+		}
+
+		//board face
+		const auto topLeft = ofVec3f(-1, -1, 0.0f) * spacing - center;
+		const auto topRight = ofVec3f(1 + size.width * 2, -1, 0.0f) * spacing - center;
+		const auto bottomLeft = ofVec3f(-1, size.height + 1, 0.0f) * spacing - center;
+		const auto bottomRight = ofVec3f(1 + size.width * 2, size.height + 1, 0.0f) * spacing - center;
+
+		mesh.addVertex(bottomLeft);
+		mesh.addVertex(topRight);
+		mesh.addVertex(topLeft);
+
+		mesh.addVertex(bottomRight);
+		mesh.addVertex(topRight);
+		mesh.addVertex(bottomLeft);
+
+		mesh.addColor(ofColor(255));
+		mesh.addColor(ofColor(255));
+		mesh.addColor(ofColor(255));
+
+		mesh.addColor(ofColor(255));
+		mesh.addColor(ofColor(255));
+		mesh.addColor(ofColor(255));
+
+		const auto z = -spacing / 100.0f;
+		const auto r = spacing / 10.0f;
+		for (auto & point : points) {
+			mesh.addVertex(point + ofVec3f(-1, +1, z) * r);
+			mesh.addVertex(point + ofVec3f(+1, -1, z) * r);
+			mesh.addVertex(point + ofVec3f(-1, -1, z) * r);
+			mesh.addVertex(point + ofVec3f(-1, +1, z) * r);
+			mesh.addVertex(point + ofVec3f(+1, +1, z) * r);
+			mesh.addVertex(point + ofVec3f(+1, -1, z) * r);
+			mesh.addColor(ofColor(0));
+			mesh.addColor(ofColor(0));
+			mesh.addColor(ofColor(0));
+			mesh.addColor(ofColor(0));
+			mesh.addColor(ofColor(0));
+			mesh.addColor(ofColor(0));
+		}
+
+		return mesh;
+	}
+
+	vector<Point3f> makeBoardPoints(BoardType boardType, cv::Size size, float spacing, bool centered) {
+		switch (boardType) {
+		case BoardType::AsymmetricCircles:
+			return makeAsymmetricCirclePoints(size, spacing, centered);
+			break;
+		case BoardType::Checkerboard:
+			return makeCheckerboardPoints(size, spacing, centered);
+			break;
+		default:
+			return vector<Point3f>();
+		}
+	}
+
+	ofMesh makeBoardMesh(BoardType boardType, cv::Size size, float spacing, bool centered) {
+		switch (boardType) {
+		case BoardType::AsymmetricCircles:
+			return makeAsymmetricCircleMesh(size, spacing, centered);
+			break;
+		case BoardType::Checkerboard:
+			return makeCheckerboardMesh(size, spacing, centered);
+			break;
+		default:
+			return ofMesh();
+		}
 	}
 	
 	void drawMat(Mat& mat, float x, float y) {
