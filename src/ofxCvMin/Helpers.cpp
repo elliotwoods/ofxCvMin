@@ -160,8 +160,8 @@ namespace ofxCv {
 		mesh.addColor(ofColor(255));
 		mesh.addColor(ofColor(255));
 
-		const auto z = -spacing / 100.0f;
 		const auto r = spacing / 10.0f;
+		const auto z = (-spacing / 100.0f) / r; // /r since *r later
 		for (auto & point : points) {
 			mesh.addVertex(point + ofVec3f(-1, +1, z) * r);
 			mesh.addVertex(point + ofVec3f(+1, -1, z) * r);
@@ -246,19 +246,26 @@ namespace ofxCv {
 	}
 	
 	void drawCorners(vector<ofVec2f> & points) {
-		ofPolyline line;
+		ofMesh line;
+		line.setMode(ofPrimitiveMode::OF_PRIMITIVE_LINE_STRIP);
+
+		ofFloatColor color(0.5f, 0.5f, 0.5f);
 		for(auto & point : points) {
 			line.addVertex(point);
+			line.addColor(color);
+			color.r += 0.5f / (float)points.size();
 		}
 		ofPushStyle();
 		ofEnableSmoothing();
 		
-		ofSetLineWidth(3.0f);
-		ofSetColor(255, 255, 255);
+		ofSetLineWidth(4.0f);
+		line.disableColors();
+		ofSetColor(0, 0, 0);
 		line.draw();
 		
-		ofSetLineWidth(1.0f);
-		ofSetColor(255, 0, 0);
+		ofSetLineWidth(2.0f);
+		line.enableColors();
+		ofSetColor(255, 255, 255);
 		line.draw();
 		
 		ofPopStyle();
