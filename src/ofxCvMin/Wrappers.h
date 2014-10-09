@@ -378,6 +378,8 @@ cv::name(xMat, yMat, resultMat);\
 
 	ofVec2f undistortPoint(const ofVec2f &, cv::Mat cameraMatrix, cv::Mat distotionCoefficients);
 
-	float calibrateProjector(cv::Mat & cameraMatrixOut, cv::Mat & rotationOut, cv::Mat & translationOut, vector<ofVec3f> world, vector<ofVec2f> projectorNormalised, int projectorWidth, int projectorHeight, float initialLensOffset, float initialThrowRatio = 1.4f);
-	float calibrateProjector(ofMatrix4x4 & viewOut, ofMatrix4x4 & projectionOut, vector<ofVec3f> world, vector<ofVec2f> projectorNormalised, int projectorWidth, int projectorHeight, float initialLensOffset, float initialThrowRatio = 1.4f);
+	float calibrateProjector(cv::Mat & cameraMatrixOut, cv::Mat & rotationOut, cv::Mat & translationOut, vector<ofVec3f> world, vector<ofVec2f> projectorNormalised, int projectorWidth, int projectorHeight, float initialLensOffset, float initialThrowRatio = 1.4f, bool trimOutliers = false, int flags = CV_CALIB_FIX_K1 | CV_CALIB_FIX_K2 | CV_CALIB_FIX_K3 | CV_CALIB_FIX_K4 | CV_CALIB_FIX_K5 | CV_CALIB_FIX_K6 | CV_CALIB_ZERO_TANGENT_DIST | CV_CALIB_USE_INTRINSIC_GUESS);
+	float calibrateProjector(ofMatrix4x4 & viewOut, ofMatrix4x4 & projectionOut, vector<ofVec3f> world, vector<ofVec2f> projectorNormalised, int projectorWidth, int projectorHeight, float initialLensOffset, float initialThrowRatio = 1.4f, bool trimOutliers = false, int flags = CV_CALIB_FIX_K1 | CV_CALIB_FIX_K2 | CV_CALIB_FIX_K3 | CV_CALIB_FIX_K4 | CV_CALIB_FIX_K5 | CV_CALIB_FIX_K6 | CV_CALIB_ZERO_TANGENT_DIST | CV_CALIB_USE_INTRINSIC_GUESS);
+
+	float calibrateCameraWorldRemoveOutliers(vector<Point3f> pointsWorld, vector<Point2f> pointsImage, cv::Size size, cv::Mat & cameraMatrixOut, cv::Mat & distortionCoefficientsOuts, cv::Mat & rotation, cv::Mat & translationOut, int flags, float maxError = 20.0f);
 }

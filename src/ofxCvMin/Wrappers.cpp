@@ -160,10 +160,10 @@ namespace ofxCv {
 				int strideY = (maxY - minY) / boardResolutionMin;
 				
 				//apply buffer to bounds
-				minX -= strideX * 2;
-				maxX += strideX * 2;
-				minY -= strideY * 2;
-				maxY += strideY * 2;
+				minX -= strideX * 4;
+				maxX += strideX * 4;
+				minY -= strideY * 4;
+				maxY += strideY * 4;
 				
 				//clamp new bounds
 				if (minX < 0)
@@ -199,7 +199,15 @@ namespace ofxCv {
 					}
 					return true;
 				} else {
-					return false;
+					ofLogWarning("ofxCv::findChessboardCornersPreTest") << "Could find in low res, but not high res";
+					corners.clear();
+					for (auto & lowResCorner : lowResPoints) {
+						auto corner = lowResCorner;
+						corner.x *= (float)image.cols / (float)lowRes.cols;
+						corner.y *= (float)image.rows / (float)lowRes.rows;
+						corners.push_back(corner);
+					}
+					return true;
 				}
 			}
 			else {
@@ -219,7 +227,7 @@ namespace ofxCv {
 		return toOf(undistortedPoints[0]);
 	}
 
-	float calibrateProjector(cv::Mat & cameraMatrixOut, cv::Mat & rotationOut, cv::Mat & translationOut, vector<ofVec3f> world, vector<ofVec2f> projectorNormalised, int projectorWidth, int projectorHeight, float initialLensOffset, float initialThrowRatio) {
+	float calibrateProjector(cv::Mat & cameraMatrixOut, cv::Mat & rotationOut, cv::Mat & translationOut, vector<ofVec3f> world, vector<ofVec2f> projectorNormalised, int projectorWidth, int projectorHeight, float initialLensOffset, float initialThrowRatio, bool trimOutliers, int flags) {
 		vector<cv::Point2f> projector;
 		for (const auto & projectorNormalisedPoint : projectorNormalised) {
 			auto projectorPoint = ofVec2f(
@@ -238,26 +246,78 @@ namespace ofxCv {
 		//same again for distortion
 		Mat distortionCoefficients = Mat::zeros(5, 1, CV_64F);
 
-		vector<Mat> rotations, translations;
-
-		int flags = CV_CALIB_FIX_K1 | CV_CALIB_FIX_K2 | CV_CALIB_FIX_K3 | CV_CALIB_FIX_K4 | CV_CALIB_FIX_K5 | CV_CALIB_FIX_K6 | CV_CALIB_ZERO_TANGENT_DIST | CV_CALIB_USE_INTRINSIC_GUESS;
-
-		float error = cv::calibrateCamera(vector<vector<Point3f>>(1, toCv(world)), vector<vector<Point2f>>(1, projector),
-			cv::Size(projectorWidth, projectorHeight),
-			cameraMatrixOut, distortionCoefficients,
-			rotations, translations, flags);
-
-		rotationOut = rotations[0];
-		translationOut = translations[0];
+		float error;
+		if (trimOutliers) {
+			error = ofxCv::calibrateCameraWorldRemoveOutliers(toCv(world), projector,
+				cv::Size(projectorWidth, projectorHeight),
+				cameraMatrixOut, distortionCoefficients,
+				rotationOut, translationOut, flags, 100.0f);
+		}
+		else {
+			vector<Mat> rotations, translations;
+			error = cv::calibrateCamera(vector<vector<Point3f>>(1, toCv(world)), vector<vector<Point2f>>(1, projector),
+				cv::Size(projectorWidth, projectorHeight),
+				cameraMatrixOut, distortionCoefficients,
+				rotations, translations, flags);
+			rotationOut = rotations[0];
+			translationOut = translations[0];
+		}
 
 		return error;
 	}
 
-	float calibrateProjector(ofMatrix4x4 & viewOut, ofMatrix4x4 & projectionOut, vector<ofVec3f> world, vector<ofVec2f> projectorNormalised, int projectorWidth, int projectorHeight, float initialLensOffset, float initialThrowRatio) {
+	float calibrateProjector(ofMatrix4x4 & viewOut, ofMatrix4x4 & projectionOut, vector<ofVec3f> world, vector<ofVec2f> projectorNormalised, int projectorWidth, int projectorHeight, float initialLensOffset, float initialThrowRatio, bool trimOutliers, int flags) {
 		cv::Mat cameraMatrix, rotation, translation;
-		float error = calibrateProjector(cameraMatrix, rotation, translation, world, projectorNormalised, projectorWidth, projectorHeight, initialLensOffset, initialThrowRatio);
+		float error = calibrateProjector(cameraMatrix, rotation, translation, world, projectorNormalised, projectorWidth, projectorHeight, initialLensOffset, initialThrowRatio, trimOutliers, flags);
 		viewOut = makeMatrix(rotation, translation);
 		projectionOut = makeProjectionMatrix(cameraMatrix, cv::Size(projectorWidth, projectorHeight));
 		return error;
+	}
+
+	float calibrateCameraWorldRemoveOutliers(vector<Point3f> pointsWorld, vector<Point2f> pointsImage, cv::Size size, cv::Mat & cameraMatrix, cv::Mat & distortionCoefficients, cv::Mat & rotation, cv::Mat & translation, int flags, float maxError) {
+		const int pointCount = pointsWorld.size();
+
+		auto cameraMatrixCopy = cameraMatrix;
+
+		vector<Mat> rotations, translations;
+		float rmsErrorAll = cv::calibrateCamera(vector<vector<Point3f>>(1, pointsWorld), vector<vector<Point2f>>(1, pointsImage),
+			size, cameraMatrix, distortionCoefficients,
+			rotations, translations, flags);
+
+		vector<Point2f> projectedPoints;
+	
+		cv::projectPoints(pointsWorld, rotations[0], translations[0], cameraMatrix, distortionCoefficients, projectedPoints);
+		set<int> indicesToRemove;
+
+		for (int i = 0; i < pointCount; i++) {
+			auto error = toOf(projectedPoints[i] - pointsImage[i]).length();
+			if (error > maxError) {
+				ofLogNotice("ofxCvMin::calibrateCameraWorldRemoveOutliers") << "Removing point [" << i << "] = [" << pointsWorld[i] << "]->[" << pointsImage[i] << "] because its error is too high [" << error << "]";
+				indicesToRemove.insert(i);
+			}
+		}
+
+		vector<Point3f> trimmedPointsWorld;
+		vector<Point2f> trimmedPointsImage;
+
+		for (int i = 0; i < pointCount; i++) {
+			if (indicesToRemove.find(i) == indicesToRemove.end()) {
+				trimmedPointsWorld.push_back(pointsWorld[i]);
+				trimmedPointsImage.push_back(pointsImage[i]);
+			}
+		}
+
+		cameraMatrix = cameraMatrixCopy.clone();
+		float rmsErrorTrimmed = cv::calibrateCamera(vector<vector<Point3f>>(1, trimmedPointsWorld), vector<vector<Point2f>>(1, trimmedPointsImage),
+			size, cameraMatrix, distortionCoefficients,
+			rotations, translations, flags);
+
+		if (rmsErrorTrimmed != rmsErrorAll) {
+			ofLogNotice("ofxCvMin::calibrateCameraWorldRemoveOutliers") << "Removing " << indicesToRemove.size() << "/" << pointCount << " points changed resprojection error from " << rmsErrorAll << "px to " << rmsErrorTrimmed << "px";
+		}
+
+		rotation = rotations[0];
+		translation = translations[0];
+		return rmsErrorTrimmed;
 	}
 }
