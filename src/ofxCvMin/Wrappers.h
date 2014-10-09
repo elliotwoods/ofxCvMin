@@ -375,6 +375,10 @@ cv::name(xMat, yMat, resultMat);\
 	ofMatrix4x4 estimateAffine3D(vector<ofVec3f>& from, vector<ofVec3f>& to, vector<unsigned char>& outliers, float accuracy = .99);
 	
 	bool findChessboardCornersPreTest(cv::Mat image, cv::Size patternSize, vector<cv::Point2f> & corners, int testResolution = 512);
+	bool findAsymmetricCircles(cv::Mat image, cv::Size patternSize, vector<cv::Point2f> & results, float minBlobWidthPct = 0.01f, float maxBlobWidthPct = 0.05f);
+
+	/// useOptimisers refers to using techniques like pre-testing the checkerboard at low resolutions
+	bool findBoard(cv::Mat image, BoardType, cv::Size patternSize, vector<cv::Point2f> & results, bool useOptimisers = true);
 
 	ofVec2f undistortPoint(const ofVec2f &, cv::Mat cameraMatrix, cv::Mat distotionCoefficients);
 

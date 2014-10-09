@@ -1,67 +1,69 @@
 #include "Wrappers.h"
 
 namespace ofxCv {
-	
+
 	using namespace cv;
-	
+
 	void loadMat(Mat& mat, string filename) {
 		FileStorage fs(ofToDataPath(filename), FileStorage::READ);
 		fs["Mat"] >> mat;
 	}
-	
+
 	void saveMat(Mat mat, string filename) {
 		FileStorage fs(ofToDataPath(filename), FileStorage::WRITE);
 		fs << "Mat" << mat;
 	}
-	
+
 	void saveImage(Mat& mat, string filename) {
-		if(mat.depth() == CV_8U) {
+		if (mat.depth() == CV_8U) {
 			ofPixels pix8u;
 			toOf(mat, pix8u);
 			ofSaveImage(pix8u, filename);
-		} else if(mat.depth() == CV_16U) {
+		}
+		else if (mat.depth() == CV_16U) {
 			ofShortPixels pix16u;
 			toOf(mat, pix16u);
 			ofSaveImage(pix16u, filename);
-		} else if(mat.depth() == CV_32F) {
+		}
+		else if (mat.depth() == CV_32F) {
 			ofFloatPixels pix32f;
 			toOf(mat, pix32f);
 			ofSaveImage(pix32f, filename);
 		}
 	}
-	
+
 	Vec3b convertColor(Vec3b color, int code) {
 		Mat_<Vec3b> mat(1, 1, CV_8UC3);
 		mat(0, 0) = color;
 		cvtColor(mat, mat, code);
 		return mat(0, 0);
 	}
-	
+
 	ofColor convertColor(ofColor color, int code) {
 		Vec3b cvColor(color.r, color.g, color.b);
 		Vec3b result = convertColor(cvColor, code);
 		return ofColor(result[0], result[1], result[2], color.a);
-	}	
-	
+	}
+
 	ofPolyline convexHull(const ofPolyline& polyline) {
 		vector<cv::Point2f> contour = toCv(polyline);
 		vector<cv::Point2f> hull;
 		convexHull(Mat(contour), hull);
 		return toOfPolyline(hull);
 	}
-	
+
 	// this should be replaced by c++ 2.0 api style code once available
 	vector<cv::Vec4i> convexityDefects(const vector<cv::Point>& contour) {
 		vector<int> hullIndices;
 		convexHull(Mat(contour), hullIndices, false, false);
 		vector<cv::Vec4i> convexityDefects;
-		if(hullIndices.size() > 0 && contour.size() > 0) {		
-			CvMat contourMat = cvMat(1, contour.size(), CV_32SC2, (void*) &contour[0]);
-			CvMat hullMat = cvMat(1, hullIndices.size(), CV_32SC1, (void*) &hullIndices[0]);
+		if (hullIndices.size() > 0 && contour.size() > 0) {
+			CvMat contourMat = cvMat(1, contour.size(), CV_32SC2, (void*)&contour[0]);
+			CvMat hullMat = cvMat(1, hullIndices.size(), CV_32SC1, (void*)&hullIndices[0]);
 			CvMemStorage* storage = cvCreateMemStorage(0);
 			CvSeq* defects = cvConvexityDefects(&contourMat, &hullMat, storage);
-			for(int i = 0; i < defects->total; i++){
-				CvConvexityDefect* cur = (CvConvexityDefect*) cvGetSeqElem(defects, i);
+			for (int i = 0; i < defects->total; i++){
+				CvConvexityDefect* cur = (CvConvexityDefect*)cvGetSeqElem(defects, i);
 				cv::Vec4i defect;
 				defect[0] = cur->depth_point->x;
 				defect[1] = cur->depth_point->y;
@@ -73,37 +75,37 @@ namespace ofxCv {
 		}
 		return convexityDefects;
 	}
-	
+
 	vector<cv::Vec4i> convexityDefects(const ofPolyline& polyline) {
 		vector<cv::Point2f> contour2f = toCv(polyline);
 		vector<cv::Point2i> contour2i;
 		Mat(contour2f).copyTo(contour2i);
 		return convexityDefects(contour2i);
 	}
-	
+
 	cv::RotatedRect minAreaRect(const ofPolyline& polyline) {
 		return minAreaRect(Mat(toCv(polyline)));
 	}
-	
+
 	cv::RotatedRect fitEllipse(const ofPolyline& polyline) {
 		return fitEllipse(Mat(toCv(polyline)));
 	}
-	
+
 	void fitLine(const ofPolyline& polyline, ofVec2f& point, ofVec2f& direction) {
 		Vec4f line;
 		fitLine(Mat(toCv(polyline)), line, CV_DIST_L2, 0, .01, .01);
 		direction.set(line[0], line[1]);
 		point.set(line[2], line[3]);
 	}
-    
+
 	ofMatrix4x4 estimateAffine3D(vector<ofVec3f>& from, vector<ofVec3f>& to, float accuracy) {
-		if(from.size() != to.size() || from.size() == 0 || to.size() == 0) {
+		if (from.size() != to.size() || from.size() == 0 || to.size() == 0) {
 			return ofMatrix4x4();
 		}
 		vector<unsigned char> outliers;
 		return estimateAffine3D(from, to, outliers, accuracy);
 	}
-    
+
 	ofMatrix4x4 estimateAffine3D(vector<ofVec3f>& from, vector<ofVec3f>& to, vector<unsigned char>& outliers, float accuracy) {
 		Mat fromMat(1, from.size(), CV_32FC3, &from[0]);
 		Mat toMat(1, to.size(), CV_32FC3, &to[0]);
@@ -120,7 +122,7 @@ namespace ofxCv {
 		affine4x4.set(affine4x4Mat.ptr<float>());
 		return affine4x4;
 	}
-	
+
 	bool findChessboardCornersPreTest(cv::Mat image, cv::Size patternSize, vector<cv::Point2f> & corners, int testResolution) {
 		if (image.rows > testResolution || image.cols > testResolution) {
 			cv::Mat lowRes;
@@ -131,9 +133,9 @@ namespace ofxCv {
 				int maxY = 0;
 				int minX = testResolution;
 				int minY = testResolution;
-				
+
 				//find bounding box (roi) of found board
-				for(auto & lowResPoint : lowResPoints) {
+				for (auto & lowResPoint : lowResPoints) {
 					if (lowResPoint.x < minX) {
 						minX = lowResPoint.x;
 					}
@@ -147,24 +149,24 @@ namespace ofxCv {
 						maxY = lowResPoint.y;
 					}
 				}
-				
+
 				//move these coords into original image space
 				maxX = maxX * image.cols / testResolution;
 				maxY = maxY * image.rows / testResolution;
 				minX = minX * image.cols / testResolution;
 				minY = minY * image.rows / testResolution;
-				
+
 				//create a buffer around found points by 1 square size
 				int boardResolutionMin = MIN(patternSize.width, patternSize.height);
 				int strideX = (maxX - minX) / boardResolutionMin;
 				int strideY = (maxY - minY) / boardResolutionMin;
-				
+
 				//apply buffer to bounds
 				minX -= strideX * 4;
 				maxX += strideX * 4;
 				minY -= strideY * 4;
 				maxY += strideY * 4;
-				
+
 				//clamp new bounds
 				if (minX < 0)
 				{
@@ -182,23 +184,24 @@ namespace ofxCv {
 				{
 					maxY = image.rows - 1;
 				}
-				
+
 				//copy roi into new matrix
 				auto roiRect = cv::Rect(minX, minY, maxX - minX, maxY - minY);
 				auto croppedFromLarge = image(roiRect);
-				
+
 				//find in cropped image
 				vector<Point2f> croppedCorners;
 				bool foundInCropped = findChessboardCorners(croppedFromLarge, patternSize, croppedCorners);
-				
+
 				if (foundInCropped) {
 					//'uncrop' corners
 					corners.clear();
-					for(auto & corner : croppedCorners) {
+					for (auto & corner : croppedCorners) {
 						corners.push_back(corner + Point2f(minX, minY));
 					}
 					return true;
-				} else {
+				}
+				else {
 					ofLogWarning("ofxCv::findChessboardCornersPreTest") << "Could find in low res, but not high res";
 					corners.clear();
 					for (auto & lowResCorner : lowResPoints) {
@@ -213,8 +216,45 @@ namespace ofxCv {
 			else {
 				return false;
 			}
-		} else {
+		}
+		else {
 			return findChessboardCorners(image, patternSize, corners);
+		}
+	}
+
+	bool findAsymmetricCirclesCircles(cv::Mat image, cv::Size patternSize, vector<cv::Point2f> & results, float minBlobWidthPct, float maxBlobWidthPct) {
+		float minArea = pow(minBlobWidthPct * image.cols, 2);
+		float maxArea = pow(maxBlobWidthPct * image.cols, 2);
+
+		int blockSize = sqrt(maxArea) * 3.0f;
+		blockSize = (blockSize / 2) * 2 + 1;
+		if (blockSize <= 1) {
+			blockSize = 3;
+		}
+
+		Mat thresholded;
+		cv::adaptiveThreshold(image, thresholded, 255, ADAPTIVE_THRESH_GAUSSIAN_C, THRESH_BINARY, blockSize, 2);
+
+		SimpleBlobDetector::Params params;
+		params.minArea = minArea;
+		params.maxArea = maxArea;
+		Ptr<FeatureDetector> blobDetector = new SimpleBlobDetector(params);
+
+		return findCirclesGrid(thresholded, patternSize, results, CALIB_CB_ASYMMETRIC_GRID | CALIB_CB_CLUSTERING, blobDetector);
+	}
+
+	bool findBoard(cv::Mat image, BoardType boardType, cv::Size patternSize, vector<cv::Point2f> & results, bool useOptimisers) {
+		switch (boardType) {
+		case BoardType::Checkerboard:
+			if (useOptimisers) {
+				return findChessboardCornersPreTest(image, patternSize, results);
+			}
+			else {
+				return findChessboardCorners(image, patternSize, results);
+			}
+			break;
+		case BoardType::AsymmetricCircles:
+			return findAsymmetricCircles(image, patternSize, results);
 		}
 	}
 
