@@ -254,6 +254,8 @@ namespace ofxCv {
 			break;
 		case BoardType::AsymmetricCircles:
 			return findAsymmetricCircles(image, patternSize, results);
+		default:
+			return false;
 		}
 	}
 
