@@ -222,11 +222,29 @@ namespace ofxCv {
 		}
 	}
 
-	bool findAsymmetricCircles(cv::Mat image, cv::Size patternSize, vector<cv::Point2f> & results, float minBlobWidthPct, float maxBlobWidthPct) {
+	SimpleBlobDetector::Params getDefaultFindCircleBlobDetectorParams(Mat image, float minBlobWidthPct, float maxBlobWidthPct) {
 		float minArea = pow(minBlobWidthPct * image.cols, 2);
 		float maxArea = pow(maxBlobWidthPct * image.cols, 2);
 
-		int blockSize = sqrt(maxArea) * 3.0f;
+		SimpleBlobDetector::Params params;
+		params.minArea = minArea;
+		params.maxArea = maxArea;
+
+		return params;
+	}
+
+	bool findAsymmetricCircles(cv::Mat image, cv::Size patternSize, vector<cv::Point2f> & results, Ptr<FeatureDetector> featureDetector, int blockSize) {
+
+		if (!featureDetector) {
+			featureDetector = new SimpleBlobDetector(getDefaultFindCircleBlobDetectorParams(image));
+		}
+
+		if (blockSize == 0) {
+			//blockSize = image.cols * 0.05f;
+
+			//hack for Light Barrier
+			blockSize = 100;
+		}
 		blockSize = (blockSize / 2) * 2 + 1;
 		if (blockSize <= 1) {
 			blockSize = 3;
@@ -235,12 +253,7 @@ namespace ofxCv {
 		Mat thresholded;
 		cv::adaptiveThreshold(image, thresholded, 255, ADAPTIVE_THRESH_GAUSSIAN_C, THRESH_BINARY, blockSize, 2);
 
-		SimpleBlobDetector::Params params;
-		params.minArea = minArea;
-		params.maxArea = maxArea;
-		Ptr<FeatureDetector> blobDetector = new SimpleBlobDetector(params);
-
-		return findCirclesGrid(thresholded, patternSize, results, CALIB_CB_ASYMMETRIC_GRID | CALIB_CB_CLUSTERING, blobDetector);
+		return findCirclesGrid(thresholded, patternSize, results, CALIB_CB_ASYMMETRIC_GRID | CALIB_CB_CLUSTERING, featureDetector);
 	}
 
 	bool findBoard(cv::Mat image, BoardType boardType, cv::Size patternSize, vector<cv::Point2f> & results, bool useOptimisers) {
