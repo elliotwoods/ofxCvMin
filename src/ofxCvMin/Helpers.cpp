@@ -22,14 +22,14 @@ namespace ofxCv {
 
 	//a reference : http://strawlab.org/2011/11/05/augmented-reality-with-OpenGL/#the_opengl_projection_matrix_from_hz_intrinsic_parameters
 	ofMatrix4x4 makeProjectionMatrix(Mat cameraMatrix, cv::Size imageSize) {
-		float fovx = cameraMatrix.at<double>(0, 0);
-		float fovy = cameraMatrix.at<double>(1, 1);
+		float focalLengthX = cameraMatrix.at<double>(0, 0);
+		float focalLengthY = cameraMatrix.at<double>(1, 1);
 		float ppx = cameraMatrix.at<double>(0, 2);
 		float ppy = cameraMatrix.at<double>(1, 2);
 
 		ofMatrix4x4 projection;
-		projection(0,0) = 2.0f * fovx / (float) imageSize.width;
-		projection(1,1) = - 2.0f * fovy / (float) imageSize.height;
+		projection(0, 0) = 2.0f * focalLengthX / (float)imageSize.width;
+		projection(1, 1) = -2.0f * focalLengthY / (float)imageSize.height;
 		projection(2,3) = 1.0f;
 		projection(3,3) = 0.0f;
 
@@ -42,14 +42,17 @@ namespace ofxCv {
 	vector<Point3f> makeCheckerboardPoints(cv::Size size, float spacing, bool centered) {
 		vector<ofVec3f> corners;
 		
-		ofVec3f center;
+		ofVec3f offset;
 		if (centered) {
-			center = ofVec3f(size.width, size.height, 0) * spacing * 0.5f;
+			offset = - ofVec3f(size.width - 1, size.height - 1, 0) * spacing * 0.5f;
+		}
+		else {
+			offset = ofVec3f(spacing, spacing, 0.0f); // first inner corner is 1 square in
 		}
 		
 		for(int j=0; j<size.height; j++) {
 			for(int i=0; i<size.width; i++) {
-				corners.push_back(ofVec3f(i, j, 0) * spacing - center);
+				corners.push_back(ofVec3f(i, j, 0) * spacing + offset);
 			}
 		}
 		return toCv(corners);
