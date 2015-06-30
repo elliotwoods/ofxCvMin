@@ -209,6 +209,25 @@ namespace ofxCv {
 		}
 	}
 	
+	vector<Point2f> undistortPixelCoordinates(const vector<Point2f> & distortedPixelCoordinates, cv::Mat cameraMatrix, cv::Mat distortionCoefficients) {
+		vector<Point2f> normalisedPoints;
+		cv::undistortPoints(distortedPixelCoordinates, normalisedPoints, cameraMatrix, distortionCoefficients);
+		auto fx = cameraMatrix.at<double>(0, 0);
+		auto fy = cameraMatrix.at<double>(1, 1);
+		auto cx = cameraMatrix.at<double>(0, 2);
+		auto cy = cameraMatrix.at<double>(1, 2);
+		
+		vector<Point2f> undistortedPixelCoordinates(distortedPixelCoordinates.size());
+		auto undistortedPixelCoordinatesIterator = undistortedPixelCoordinates.begin();
+		for (const auto & normalisedPoint : normalisedPoints) {
+			auto & undistorted = *undistortedPixelCoordinatesIterator++;
+			undistorted.x = normalisedPoint.x * fx + cx;
+			undistorted.y = normalisedPoint.y * fy + cy;
+		}
+
+		return undistortedPixelCoordinates;
+	}
+
 	void drawMat(Mat& mat, float x, float y) {
 		drawMat(mat, x, y, mat.cols, mat.rows);
 	}

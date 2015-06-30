@@ -46,7 +46,7 @@ namespace ofxCv {
 		return CV_8S;
 	}
 	template <class T> inline int getDepth(ofBaseHasPixels_<T>& img) {
-		return getDepth(img.getPixelsRef());
+		return getDepth(img.getPixels());
 	}
 	
 	// channels
@@ -67,7 +67,7 @@ namespace ofxCv {
 		return pixels.getNumChannels();
 	}
 	template <class T> inline int getChannels(ofBaseHasPixels_<T>& img) {
-		return getChannels(img.getPixelsRef());
+		return getChannels(img.getPixels());
 	}
 	
 	// image type
@@ -172,7 +172,7 @@ const X & toOf(const Y &);
 		return Mat(pix.getHeight(), pix.getWidth(), getCvImageType(pix), pix.getPixels(), 0);
 	}
 	template <class T> inline Mat toCv(ofBaseHasPixels_<T>& img) {
-		return toCv(img.getPixelsRef());
+		return toCv(img.getPixels());
 	}
 	Mat toCv(ofMesh& mesh);
 	cv::Rect toCv(ofRectangle rect);
@@ -225,6 +225,6 @@ const X & toOf(const Y &);
 	template <class T>
 	void toOf(Mat mat, ofImage_<T>& img) {
 		imitate(img, mat);
-		toOf(mat, img.getPixelsRef());
+		toOf(mat, img.getPixels());
 	}
 }
