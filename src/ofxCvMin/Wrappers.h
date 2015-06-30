@@ -30,6 +30,7 @@
 #include "ofMain.h"
 #include "opencv2/opencv.hpp"
 #include "Utilities.h"
+#include "Helpers.h"
 
 namespace ofxCv {
 	
@@ -374,6 +375,16 @@ cv::name(xMat, yMat, resultMat);\
 	ofMatrix4x4 estimateAffine3D(vector<ofVec3f>& from, vector<ofVec3f>& to, vector<unsigned char>& outliers, float accuracy = .99);
 	
 	bool findChessboardCornersPreTest(cv::Mat image, cv::Size patternSize, vector<cv::Point2f> & corners, int testResolution = 512);
+	SimpleBlobDetector::Params getDefaultFindCircleBlobDetectorParams(Mat image, float minBlobWidthPct = 0.001f, float maxBlobWidthPct = 0.05f);
+	bool findAsymmetricCircles(cv::Mat image, cv::Size patternSize, vector<cv::Point2f> & results, Ptr<FeatureDetector> featureDetector = Ptr<FeatureDetector>(), int blockSize = 0);
+
+	/// useOptimisers refers to using techniques like pre-testing the checkerboard at low resolutions
+	bool findBoard(cv::Mat image, BoardType, cv::Size patternSize, vector<cv::Point2f> & results, bool useOptimisers = true);
 
 	ofVec2f undistortPoint(const ofVec2f &, cv::Mat cameraMatrix, cv::Mat distotionCoefficients);
+
+	float calibrateProjector(cv::Mat & cameraMatrixOut, cv::Mat & rotationOut, cv::Mat & translationOut, vector<ofVec3f> world, vector<ofVec2f> projectorNormalised, int projectorWidth, int projectorHeight, float initialLensOffset, float initialThrowRatio = 1.4f, bool trimOutliers = false, int flags = CV_CALIB_FIX_K1 | CV_CALIB_FIX_K2 | CV_CALIB_FIX_K3 | CV_CALIB_FIX_K4 | CV_CALIB_FIX_K5 | CV_CALIB_FIX_K6 | CV_CALIB_ZERO_TANGENT_DIST | CV_CALIB_USE_INTRINSIC_GUESS);
+	float calibrateProjector(ofMatrix4x4 & viewOut, ofMatrix4x4 & projectionOut, vector<ofVec3f> world, vector<ofVec2f> projectorNormalised, int projectorWidth, int projectorHeight, float initialLensOffset, float initialThrowRatio = 1.4f, bool trimOutliers = false, int flags = CV_CALIB_FIX_K1 | CV_CALIB_FIX_K2 | CV_CALIB_FIX_K3 | CV_CALIB_FIX_K4 | CV_CALIB_FIX_K5 | CV_CALIB_FIX_K6 | CV_CALIB_ZERO_TANGENT_DIST | CV_CALIB_USE_INTRINSIC_GUESS);
+
+	float calibrateCameraWorldRemoveOutliers(vector<Point3f> pointsWorld, vector<Point2f> pointsImage, cv::Size size, cv::Mat & cameraMatrixOut, cv::Mat & distortionCoefficientsOuts, cv::Mat & rotation, cv::Mat & translationOut, int flags, float maxError = 20.0f);
 }

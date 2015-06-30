@@ -22,14 +22,14 @@ namespace ofxCv {
 
 	//a reference : http://strawlab.org/2011/11/05/augmented-reality-with-OpenGL/#the_opengl_projection_matrix_from_hz_intrinsic_parameters
 	ofMatrix4x4 makeProjectionMatrix(Mat cameraMatrix, cv::Size imageSize) {
-		float fovx = cameraMatrix.at<double>(0, 0);
-		float fovy = cameraMatrix.at<double>(1, 1);
+		float focalLengthX = cameraMatrix.at<double>(0, 0);
+		float focalLengthY = cameraMatrix.at<double>(1, 1);
 		float ppx = cameraMatrix.at<double>(0, 2);
 		float ppy = cameraMatrix.at<double>(1, 2);
 
 		ofMatrix4x4 projection;
-		projection(0,0) = 2.0f * fovx / (float) imageSize.width;
-		projection(1,1) = - 2.0f * fovy / (float) imageSize.height;
+		projection(0, 0) = 2.0f * focalLengthX / (float)imageSize.width;
+		projection(1, 1) = -2.0f * focalLengthY / (float)imageSize.height;
 		projection(2,3) = 1.0f;
 		projection(3,3) = 0.0f;
 
@@ -42,14 +42,17 @@ namespace ofxCv {
 	vector<Point3f> makeCheckerboardPoints(cv::Size size, float spacing, bool centered) {
 		vector<ofVec3f> corners;
 		
-		ofVec3f center;
+		ofVec3f offset;
 		if (centered) {
-			center = ofVec3f(size.width, size.height, 0) * spacing * 0.5f;
+			offset = - ofVec3f(size.width - 1, size.height - 1, 0) * spacing * 0.5f;
+		}
+		else {
+			offset = ofVec3f(spacing, spacing, 0.0f); // first inner corner is 1 square in
 		}
 		
 		for(int j=0; j<size.height; j++) {
 			for(int i=0; i<size.width; i++) {
-				corners.push_back(ofVec3f(i, j, 0) * spacing - center);
+				corners.push_back(ofVec3f(i, j, 0) * spacing + offset);
 			}
 		}
 		return toCv(corners);
@@ -63,21 +66,44 @@ namespace ofxCv {
 			center = ofVec3f(size.width + 1, size.height + 1, 0) * spacing * 0.5f;
 		}
 		
-		for(int i=0; i<size.width + 1; i++) {
+		//board face
+		const auto topLeft = ofVec3f(-1, -1, 0.0f) * spacing - center;
+		const auto topRight = ofVec3f(2 + size.width, -1, 0.0f) * spacing - center;
+		const auto bottomLeft = ofVec3f(-1, size.height + 2, 0.0f) * spacing - center;
+		const auto bottomRight = ofVec3f(2 + size.width, size.height + 2, 0.0f) * spacing - center;
+		
+		mesh.addVertex(bottomLeft);
+		mesh.addVertex(topRight);
+		mesh.addVertex(topLeft);
+
+		mesh.addVertex(bottomRight);
+		mesh.addVertex(topRight);
+		mesh.addVertex(bottomLeft);
+
+		mesh.addColor(ofColor(255));
+		mesh.addColor(ofColor(255));
+		mesh.addColor(ofColor(255));
+
+		mesh.addColor(ofColor(255));
+		mesh.addColor(ofColor(255));
+		mesh.addColor(ofColor(255));
+
+		const auto z = -spacing / 100.0f;
+		for (int i = 0; i<size.width + 1; i++) {
 			for(int j=0; j<size.height + 1; j++) {
 				auto black = i % 2 == j % 2;
-				auto topLeft = ofVec3f(i, j, 0) * spacing - center;
+				auto squareTopLeft = ofVec3f(i, j, z) * spacing - center;
 				
-				mesh.addVertex(topLeft);
-				mesh.addVertex(topLeft + ofVec3f(0, spacing, 0));
-				mesh.addVertex(topLeft + ofVec3f(spacing, 0, 0));
+				mesh.addVertex(squareTopLeft);
+				mesh.addVertex(squareTopLeft + ofVec3f(0, spacing, 0));
+				mesh.addVertex(squareTopLeft + ofVec3f(spacing, 0, 0));
 
-				mesh.addVertex(topLeft + ofVec3f(spacing, 0, 0));
-				mesh.addVertex(topLeft + ofVec3f(0, spacing, 0));
-				mesh.addVertex(topLeft + ofVec3f(spacing, spacing, 0));
+				mesh.addVertex(squareTopLeft + ofVec3f(spacing, 0, 0));
+				mesh.addVertex(squareTopLeft + ofVec3f(0, spacing, 0));
+				mesh.addVertex(squareTopLeft + ofVec3f(spacing, spacing, 0));
 
 				for(int c=0; c<6; c++) {
-					mesh.addColor(ofFloatColor(black ? 0.0f : 255.0f));
+					mesh.addColor(ofFloatColor(black ? 0.0f : 1.0f));
 				}
 			}
 		}
@@ -85,7 +111,123 @@ namespace ofxCv {
 		mesh.setMode(ofPrimitiveMode::OF_PRIMITIVE_TRIANGLES);
 		return mesh;
 	}
+
+	vector<Point3f> makeAsymmetricCirclePoints(cv::Size size, float spacing, bool centered) {
+		vector<ofVec3f> points;
+
+		ofVec3f center;
+		if (centered) {
+			center = ofVec3f(size.width * 2.0f - 1.0f, size.height - 1.0f, 0) * spacing * 0.5f;
+		}
+
+		for (int j = 0; j<size.height; j++) {
+			for (int i = 0; i<size.width; i++) {
+				points.push_back(ofVec3f(
+					i * 2 + (j % 2),
+					j,
+					0
+					) * spacing - center);
+			}
+		}
+		return toCv(points);
+	}
+
+	ofMesh makeAsymmetricCircleMesh(cv::Size size, float spacing, bool centered) {
+		ofMesh mesh;
+		const auto points = toOf(makeAsymmetricCirclePoints(size, spacing, centered));
+		
+		ofVec3f center;
+		if (centered) {
+			center = ofVec3f(size.width * 2.0f, size.height, 0) * spacing * 0.5f;
+		}
+
+		//board face
+		const auto topLeft = ofVec3f(-1, -1, 0.0f) * spacing - center;
+		const auto topRight = ofVec3f(1 + size.width * 2, -1, 0.0f) * spacing - center;
+		const auto bottomLeft = ofVec3f(-1, size.height + 1, 0.0f) * spacing - center;
+		const auto bottomRight = ofVec3f(1 + size.width * 2, size.height + 1, 0.0f) * spacing - center;
+
+		mesh.addVertex(bottomLeft);
+		mesh.addVertex(topRight);
+		mesh.addVertex(topLeft);
+
+		mesh.addVertex(bottomRight);
+		mesh.addVertex(topRight);
+		mesh.addVertex(bottomLeft);
+
+		mesh.addColor(ofColor(255));
+		mesh.addColor(ofColor(255));
+		mesh.addColor(ofColor(255));
+
+		mesh.addColor(ofColor(255));
+		mesh.addColor(ofColor(255));
+		mesh.addColor(ofColor(255));
+
+		const auto r = spacing / 10.0f;
+		const auto z = (-spacing / 100.0f) / r; // /r since *r later
+		for (auto & point : points) {
+			mesh.addVertex(point + ofVec3f(-1, +1, z) * r);
+			mesh.addVertex(point + ofVec3f(+1, -1, z) * r);
+			mesh.addVertex(point + ofVec3f(-1, -1, z) * r);
+			mesh.addVertex(point + ofVec3f(-1, +1, z) * r);
+			mesh.addVertex(point + ofVec3f(+1, +1, z) * r);
+			mesh.addVertex(point + ofVec3f(+1, -1, z) * r);
+			mesh.addColor(ofColor(0));
+			mesh.addColor(ofColor(0));
+			mesh.addColor(ofColor(0));
+			mesh.addColor(ofColor(0));
+			mesh.addColor(ofColor(0));
+			mesh.addColor(ofColor(0));
+		}
+
+		return mesh;
+	}
+
+	vector<Point3f> makeBoardPoints(BoardType boardType, cv::Size size, float spacing, bool centered) {
+		switch (boardType) {
+		case BoardType::AsymmetricCircles:
+			return makeAsymmetricCirclePoints(size, spacing, centered);
+			break;
+		case BoardType::Checkerboard:
+			return makeCheckerboardPoints(size, spacing, centered);
+			break;
+		default:
+			return vector<Point3f>();
+		}
+	}
+
+	ofMesh makeBoardMesh(BoardType boardType, cv::Size size, float spacing, bool centered) {
+		switch (boardType) {
+		case BoardType::AsymmetricCircles:
+			return makeAsymmetricCircleMesh(size, spacing, centered);
+			break;
+		case BoardType::Checkerboard:
+			return makeCheckerboardMesh(size, spacing, centered);
+			break;
+		default:
+			return ofMesh();
+		}
+	}
 	
+	vector<Point2f> undistortPixelCoordinates(const vector<Point2f> & distortedPixelCoordinates, cv::Mat cameraMatrix, cv::Mat distortionCoefficients) {
+		vector<Point2f> normalisedPoints;
+		cv::undistortPoints(distortedPixelCoordinates, normalisedPoints, cameraMatrix, distortionCoefficients);
+		auto fx = cameraMatrix.at<double>(0, 0);
+		auto fy = cameraMatrix.at<double>(1, 1);
+		auto cx = cameraMatrix.at<double>(0, 2);
+		auto cy = cameraMatrix.at<double>(1, 2);
+		
+		vector<Point2f> undistortedPixelCoordinates(distortedPixelCoordinates.size());
+		auto undistortedPixelCoordinatesIterator = undistortedPixelCoordinates.begin();
+		for (const auto & normalisedPoint : normalisedPoints) {
+			auto & undistorted = *undistortedPixelCoordinatesIterator++;
+			undistorted.x = normalisedPoint.x * fx + cx;
+			undistorted.y = normalisedPoint.y * fy + cy;
+		}
+
+		return undistortedPixelCoordinates;
+	}
+
 	void drawMat(Mat& mat, float x, float y) {
 		drawMat(mat, x, y, mat.cols, mat.rows);
 	}
@@ -126,19 +268,26 @@ namespace ofxCv {
 	}
 	
 	void drawCorners(vector<ofVec2f> & points) {
-		ofPolyline line;
+		ofMesh line;
+		line.setMode(ofPrimitiveMode::OF_PRIMITIVE_LINE_STRIP);
+
+		ofFloatColor color(0.5f, 0.5f, 0.5f);
 		for(auto & point : points) {
 			line.addVertex(point);
+			line.addColor(color);
+			color.r += 0.5f / (float)points.size();
 		}
 		ofPushStyle();
 		ofEnableSmoothing();
 		
-		ofSetLineWidth(3.0f);
-		ofSetColor(255, 255, 255);
+		ofSetLineWidth(4.0f);
+		line.disableColors();
+		ofSetColor(0, 0, 0);
 		line.draw();
 		
-		ofSetLineWidth(1.0f);
-		ofSetColor(255, 0, 0);
+		ofSetLineWidth(2.0f);
+		line.enableColors();
+		ofSetColor(255, 255, 255);
 		line.draw();
 		
 		ofPopStyle();
