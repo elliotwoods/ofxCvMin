@@ -12,7 +12,7 @@ void ofApp::setup(){
 void ofApp::update(){
 	camera.update();
 	
-	Mat matImage = toCv(camera.getPixelsRef());
+	Mat matImage = toCv(camera.getPixelsRef()).clone();
 	cv::erode(matImage, matImage, Mat());
 	cv::erode(matImage, matImage, Mat());
 	cv::erode(matImage, matImage, Mat());
