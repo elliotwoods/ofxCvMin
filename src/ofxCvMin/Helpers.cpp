@@ -72,27 +72,28 @@ namespace ofxCv {
 		const auto bottomLeft = ofVec3f(-1, size.height + 2, 0.0f) * spacing - center;
 		const auto bottomRight = ofVec3f(2 + size.width, size.height + 2, 0.0f) * spacing - center;
 		
-		mesh.addVertex(bottomLeft);
-		mesh.addVertex(topRight);
-		mesh.addVertex(topLeft);
+		const auto z = + spacing / 50.0f;
+		const auto offset = ofVec3f(0, 0, z);
+		mesh.addVertex(bottomLeft + offset);
+		mesh.addVertex(topRight + offset);
+		mesh.addVertex(topLeft + offset);
 
-		mesh.addVertex(bottomRight);
-		mesh.addVertex(topRight);
-		mesh.addVertex(bottomLeft);
-
-		mesh.addColor(ofColor(255));
-		mesh.addColor(ofColor(255));
-		mesh.addColor(ofColor(255));
+		mesh.addVertex(bottomRight + offset);
+		mesh.addVertex(topRight + offset);
+		mesh.addVertex(bottomLeft + offset);
 
 		mesh.addColor(ofColor(255));
 		mesh.addColor(ofColor(255));
 		mesh.addColor(ofColor(255));
 
-		const auto z = -spacing / 100.0f;
+		mesh.addColor(ofColor(255));
+		mesh.addColor(ofColor(255));
+		mesh.addColor(ofColor(255));
+
 		for (int i = 0; i<size.width + 1; i++) {
 			for(int j=0; j<size.height + 1; j++) {
 				auto black = i % 2 == j % 2;
-				auto squareTopLeft = ofVec3f(i, j, z) * spacing - center;
+				auto squareTopLeft = ofVec3f(i, j, 0) * spacing - center;
 				
 				mesh.addVertex(squareTopLeft);
 				mesh.addVertex(squareTopLeft + ofVec3f(0, spacing, 0));
@@ -164,7 +165,7 @@ namespace ofxCv {
 		mesh.addColor(ofColor(255));
 
 		const auto r = spacing / 10.0f;
-		const auto z = (-spacing / 100.0f) / r; // /r since *r later
+		const auto z = (-spacing / 50.0f) / r; // /r since *r later
 		for (auto & point : points) {
 			mesh.addVertex(point + ofVec3f(-1, +1, z) * r);
 			mesh.addVertex(point + ofVec3f(+1, -1, z) * r);
