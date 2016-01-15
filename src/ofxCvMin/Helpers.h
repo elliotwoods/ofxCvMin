@@ -19,7 +19,6 @@ namespace ofxCv {
 	
 	ofMatrix4x4 makeMatrix(Mat rotation, Mat translation);
 	ofMatrix4x4 makeProjectionMatrix(Mat cameraMatrix, cv::Size imageSize);
-	void applyMatrix(const ofMatrix4x4& matrix);
 	
 	vector<Point3f> makeCheckerboardPoints(cv::Size size, float spacing, bool centered = true);
 	ofMesh makeCheckerboardMesh(cv::Size size, float spacing, bool centered = true);
