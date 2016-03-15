@@ -1,27 +1,18 @@
 # Introduction
 
-ofxCvMin began with:
+ofxCvMin began with the Utility and Wrapper functions from Kyle McDonald's ofxCv (https://github.com/kylemcdonald/ofxCv/) and working builds for OSX and Visual Studio.
 
-* Modern OpenCv libs
-* C++11 support on OSX
-* Utility and Wrapper functions from Kyle McDonald's ofxCv (https://github.com/kylemcdonald/ofxCv/) (although many have been removed / changed signifcantly. Compatability is not expected)
+The addon aims to provide a lightweight implementation of modern OpenCV with cross-platform C++11 support, i.e.:
 
-The aims of this addon are to:
-
-* Be minimal (no significant helper classes)
 * Be fast and convenient (equivalence types, e.g. ofVec2f and cv::Point2f are convertible by refernce without copy)
-* Give you a working OpenCV environment with the least fuss
-* Provide some commonly used helper functions
-* 
+* Be easy to port between platforms (i.e. no extra libraries)
+* Provide some commonly used helper functions which allow the user to most of their work with OpenCV directly.
+
 Currently I'm working with:
 * XCode 5
 * Visual Studio 2012
 
 This addon does not require ofxOpenCv. 
-
-## Side note
-
-This addon may become less useful when a proper c++11 release of oF arrives.
 
 # Notes to self
 
