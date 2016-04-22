@@ -34,8 +34,8 @@ namespace ofxCv {
 	void drawMat(Mat& mat, float x, float y);
 	void drawMat(Mat& mat, float x, float y, float width, float height);
 	
-	void drawCorners(vector<Point2f> &);
-	void drawCorners(vector<ofVec2f> &);
+	void drawCorners(const vector<Point2f> &);
+	void drawCorners(const vector<ofVec2f> &);
 	
 	template <class T>
 	ofVec2f findMaxLocation(T& img) {

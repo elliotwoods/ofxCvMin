@@ -263,12 +263,12 @@ namespace ofxCv {
 		tex.draw(x, y, width, height);
 	}
 	
-	void drawCorners(vector<Point2f> & points) {
+	void drawCorners(const vector<Point2f> & points) {
 		vector<ofVec2f> ofPoints = toOf(points);
 		drawCorners(ofPoints);
 	}
 	
-	void drawCorners(vector<ofVec2f> & points) {
+	void drawCorners(const vector<ofVec2f> & points) {
 		ofMesh line;
 		line.setMode(ofPrimitiveMode::OF_PRIMITIVE_LINE_STRIP);
 
