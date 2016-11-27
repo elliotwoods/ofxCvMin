@@ -281,14 +281,26 @@ namespace ofxCv {
 		return toOf(undistortedPoints[0]);
 	}
 
-	float calibrateProjector(cv::Mat & cameraMatrixOut, cv::Mat & rotationOut, cv::Mat & translationOut, vector<ofVec3f> world, vector<ofVec2f> projectorNormalised, int projectorWidth, int projectorHeight, float initialLensOffset, float initialThrowRatio, bool trimOutliers, int flags) {
+	float calibrateProjector(cv::Mat & cameraMatrixOut
+		, cv::Mat & rotationOut, cv::Mat & translationOut
+		, vector<ofVec3f> world, vector<ofVec2f> projectorPoints
+		, int projectorWidth, int projectorHeight
+		, bool projectorPointsAreNormalized
+		, float initialLensOffset, float initialThrowRatio
+		, bool trimOutliers, int flags) {
 		vector<cv::Point2f> projector;
-		for (const auto & projectorNormalisedPoint : projectorNormalised) {
-			auto projectorPoint = ofVec2f(
-				ofMap(projectorNormalisedPoint.x, -1, +1, 0, projectorWidth),
-				ofMap(projectorNormalisedPoint.y, -1, +1, 0, projectorHeight));
-			projector.push_back(toCv(projectorPoint));
+		if (projectorPointsAreNormalized) {
+			for (const auto & projectorNormalisedPoint : projectorPoints) {
+				auto projectorPoint = ofVec2f(
+					ofMap(projectorNormalisedPoint.x, -1, +1, 0, projectorWidth),
+					ofMap(projectorNormalisedPoint.y, -1, +1, 0, projectorHeight));
+				projector.push_back(toCv(projectorPoint));
+			}
 		}
+		else {
+			projector = toCv(projectorPoints);
+		}
+		
 
 		//we have to intitialise a basic camera matrix for it to start with (this will get changed by the function call calibrateCamera)
 		cameraMatrixOut = Mat::eye(3, 3, CV_64F);
@@ -309,10 +321,12 @@ namespace ofxCv {
 		}
 		else {
 			vector<Mat> rotations, translations;
-			error = cv::calibrateCamera(vector<vector<Point3f>>(1, toCv(world)), vector<vector<Point2f>>(1, projector),
-				cv::Size(projectorWidth, projectorHeight),
-				cameraMatrixOut, distortionCoefficients,
-				rotations, translations, flags);
+			error = cv::calibrateCamera(vector<vector<Point3f>>(1, toCv(world)), vector<vector<Point2f>>(1, projector)
+				, cv::Size(projectorWidth, projectorHeight)
+				, cameraMatrixOut, distortionCoefficients
+				, rotations, translations
+				, flags
+				, TermCriteria(TermCriteria::COUNT + TermCriteria::EPS, 1000, DBL_EPSILON));
 			rotationOut = rotations[0];
 			translationOut = translations[0];
 		}
@@ -320,9 +334,14 @@ namespace ofxCv {
 		return error;
 	}
 
-	float calibrateProjector(ofMatrix4x4 & viewOut, ofMatrix4x4 & projectionOut, vector<ofVec3f> world, vector<ofVec2f> projectorNormalised, int projectorWidth, int projectorHeight, float initialLensOffset, float initialThrowRatio, bool trimOutliers, int flags) {
+	float calibrateProjector(ofMatrix4x4 & viewOut, ofMatrix4x4 & projectionOut
+		, vector<ofVec3f> world, vector<ofVec2f> projectorPoints
+		, int projectorWidth, int projectorHeight
+		, bool projectorPointsAreNormalized
+		, float initialLensOffset, float initialThrowRatio
+		, bool trimOutliers, int flags) {
 		cv::Mat cameraMatrix, rotation, translation;
-		float error = calibrateProjector(cameraMatrix, rotation, translation, world, projectorNormalised, projectorWidth, projectorHeight, initialLensOffset, initialThrowRatio, trimOutliers, flags);
+		float error = calibrateProjector(cameraMatrix, rotation, translation, world, projectorPoints, projectorWidth, projectorHeight, projectorPointsAreNormalized, initialLensOffset, initialThrowRatio, trimOutliers, flags);
 		viewOut = makeMatrix(rotation, translation);
 		projectionOut = makeProjectionMatrix(cameraMatrix, cv::Size(projectorWidth, projectorHeight));
 		return error;
@@ -362,9 +381,11 @@ namespace ofxCv {
 		}
 
 		cameraMatrix = cameraMatrixCopy.clone();
-		float rmsErrorTrimmed = cv::calibrateCamera(vector<vector<Point3f>>(1, trimmedPointsWorld), vector<vector<Point2f>>(1, trimmedPointsImage),
-			size, cameraMatrix, distortionCoefficients,
-			rotations, translations, flags);
+		float rmsErrorTrimmed = cv::calibrateCamera(vector<vector<Point3f>>(1, trimmedPointsWorld), vector<vector<Point2f>>(1, trimmedPointsImage)
+			, size
+			, cameraMatrix, distortionCoefficients
+			, rotations, translations
+			, flags);
 
 		if (rmsErrorTrimmed != rmsErrorAll) {
 			ofLogNotice("ofxCvMin::calibrateCameraWorldRemoveOutliers") << "Removing " << indicesToRemove.size() << "/" << pointCount << " points changed resprojection error from " << rmsErrorAll << "px to " << rmsErrorTrimmed << "px";
