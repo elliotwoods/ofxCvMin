@@ -381,6 +381,17 @@ namespace ofxCv {
 		}
 
 		cameraMatrix = cameraMatrixCopy.clone();
+		
+		//ensure principal point inside image
+		{
+			if (cameraMatrix.at<double>(0, 2) < 0 || cameraMatrix.at<double>(0, 2) >= size.width - 1) {
+				cameraMatrix.at<double>(0, 2) = size.width / 2.0f;
+			}
+			if (cameraMatrix.at<double>(1, 2) < 0 || cameraMatrix.at<double>(1, 2) >= size.height - 1) {
+				cameraMatrix.at<double>(1, 2) = size.height / 2.0f;
+			}
+		}
+
 		float rmsErrorTrimmed = cv::calibrateCamera(vector<vector<Point3f>>(1, trimmedPointsWorld), vector<vector<Point2f>>(1, trimmedPointsImage)
 			, size
 			, cameraMatrix, distortionCoefficients

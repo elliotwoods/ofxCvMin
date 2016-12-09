@@ -389,14 +389,14 @@ cv::name(xMat, yMat, resultMat);\
 		, int projectorWidth, int projectorHeight
 		, bool projectorPointsAreNormalized
 		, float initialLensOffset, float initialThrowRatio = 1.4f
-		, bool trimOutliers = false, int flags = CV_CALIB_FIX_K1 | CV_CALIB_FIX_K2 | CV_CALIB_FIX_K3 | CV_CALIB_FIX_K4 | CV_CALIB_FIX_K5 | CV_CALIB_FIX_K6 | CV_CALIB_ZERO_TANGENT_DIST | CV_CALIB_USE_INTRINSIC_GUESS);
+		, bool trimOutliers = false, int flags = CV_CALIB_FIX_K1 | CV_CALIB_FIX_K2 | CV_CALIB_FIX_K3 | CV_CALIB_FIX_K4 | CV_CALIB_FIX_K5 | CV_CALIB_FIX_K6 | CV_CALIB_ZERO_TANGENT_DIST | CV_CALIB_USE_INTRINSIC_GUESS | CV_CALIB_FIX_ASPECT_RATIO);
 
 	float calibrateProjector(ofMatrix4x4 & viewOut, ofMatrix4x4 & projectionOut
 		, vector<ofVec3f> world, vector<ofVec2f> projectorPoints
 		, int projectorWidth, int projectorHeight
 		, bool projectorPointsAreNormalized
 		, float initialLensOffset, float initialThrowRatio = 1.4f
-		, bool trimOutliers = false, int flags = CV_CALIB_FIX_K1 | CV_CALIB_FIX_K2 | CV_CALIB_FIX_K3 | CV_CALIB_FIX_K4 | CV_CALIB_FIX_K5 | CV_CALIB_FIX_K6 | CV_CALIB_ZERO_TANGENT_DIST | CV_CALIB_USE_INTRINSIC_GUESS);
+		, bool trimOutliers = false, int flags = CV_CALIB_FIX_K1 | CV_CALIB_FIX_K2 | CV_CALIB_FIX_K3 | CV_CALIB_FIX_K4 | CV_CALIB_FIX_K5 | CV_CALIB_FIX_K6 | CV_CALIB_ZERO_TANGENT_DIST | CV_CALIB_USE_INTRINSIC_GUESS | CV_CALIB_FIX_ASPECT_RATIO);
 
 	float calibrateCameraWorldRemoveOutliers(vector<Point3f> pointsWorld, vector<Point2f> pointsImage, cv::Size size, cv::Mat & cameraMatrixOut, cv::Mat & distortionCoefficientsOuts, cv::Mat & rotation, cv::Mat & translationOut, int flags, float maxError = 20.0f);
 }

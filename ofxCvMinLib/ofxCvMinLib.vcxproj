@@ -20,11 +20,13 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\src\ofxCvMin.h" />
+    <ClInclude Include="..\src\ofxCvMin\CheckerboardUserAssist.h" />
     <ClInclude Include="..\src\ofxCvMin\Helpers.h" />
     <ClInclude Include="..\src\ofxCvMin\Utilities.h" />
     <ClInclude Include="..\src\ofxCvMin\Wrappers.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\src\ofxCvMin\CheckerboardUserAssist.cpp" />
     <ClCompile Include="..\src\ofxCvMin\Helpers.cpp" />
     <ClCompile Include="..\src\ofxCvMin\Utilities.cpp" />
     <ClCompile Include="..\src\ofxCvMin\Wrappers.cpp" />
