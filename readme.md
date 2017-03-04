@@ -10,7 +10,7 @@ The addon aims to provide a lightweight implementation of modern OpenCV with cro
 
 Currently I'm working with:
 * XCode 5
-* Visual Studio 2012
+* Visual Studio 2015
 
 This addon does not require ofxOpenCv. 
 
