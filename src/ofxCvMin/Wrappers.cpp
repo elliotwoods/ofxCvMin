@@ -199,6 +199,8 @@ namespace ofxCv {
 					for (auto & corner : croppedCorners) {
 						corners.push_back(corner + Point2f(minX, minY));
 					}
+
+					refineCheckerboardCorners(image, patternSize, corners);
 					return true;
 				}
 				else {
@@ -210,6 +212,8 @@ namespace ofxCv {
 						corner.y *= (float)image.rows / (float)lowRes.rows;
 						corners.push_back(corner);
 					}
+
+					refineCheckerboardCorners(image, patternSize, corners);
 					return true;
 				}
 			}
@@ -270,6 +274,56 @@ namespace ofxCv {
 		default:
 			return false;
 		}
+	}
+
+	bool refineCheckerboardCorners(cv::Mat image, cv::Size patternSize, vector<cv::Point2f> & corners, int desiredHalfWindowSize /*= 5*/) {
+		int windowSize = desiredHalfWindowSize;
+
+		//make sure search size isn't too large
+		{
+			auto boundsOfCornerFinds = cv::boundingRect(corners);
+			auto cornerFindsMinorAxis = MIN(boundsOfCornerFinds.width, boundsOfCornerFinds.height);
+			auto boardMajorAxis = MAX(patternSize.width, patternSize.height);
+			auto spacingBetweenCornersInImage = cornerFindsMinorAxis / (float)boardMajorAxis;
+
+			if (spacingBetweenCornersInImage / 4 < windowSize) {
+				windowSize = spacingBetweenCornersInImage / 4;
+				if (windowSize % 2 == 0) {
+					windowSize++;
+				}
+			}
+
+			if (windowSize < 3) {
+				//window size is too small to use
+				return false;
+			}
+		}
+
+		int ignoreCenterPixelsSize = windowSize / 5;
+
+		auto subPixResults = corners;
+		try {
+			cv::cornerSubPix(image, subPixResults, Size(windowSize, windowSize), Size(ignoreCenterPixelsSize, ignoreCenterPixelsSize), TermCriteria(CV_TERMCRIT_ITER + CV_TERMCRIT_EPS, 50, 1e-5));
+			if (corners.size() != subPixResults.size()) {
+				return false;
+			}
+		}
+		catch (cv::Exception e) {
+			ofLogWarning("ofxCvMin") << "Couldn't perform sub-pixel refinement of checkerboard find : " << e.what();
+			return false;
+		}
+
+		//make sure none of the corners have walked outside their starting window
+		for (int i = 0; i < corners.size(); i++) {
+			auto difference = corners[i] - subPixResults[i];
+			if (difference.x * difference.x + difference.y * difference.y > windowSize * windowSize) {
+				//we walked too far!
+				return false;
+			}
+		}
+
+		corners = subPixResults;
+		return true;
 	}
 
 	ofVec2f undistortPoint(const ofVec2f & distortedPoint, cv::Mat cameraMatrix, cv::Mat distotionCoefficients) {

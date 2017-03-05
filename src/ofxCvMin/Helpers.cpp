@@ -263,37 +263,6 @@ namespace ofxCv {
 		tex.draw(x, y, width, height);
 	}
 	
-	void drawCorners(const vector<Point2f> & points) {
-		vector<ofVec2f> ofPoints = toOf(points);
-		drawCorners(ofPoints);
-	}
-	
-	void drawCorners(const vector<ofVec2f> & points) {
-		ofMesh line;
-		line.setMode(ofPrimitiveMode::OF_PRIMITIVE_LINE_STRIP);
-
-		ofFloatColor color(0.5f, 0.5f, 0.5f);
-		for(auto & point : points) {
-			line.addVertex(point);
-			line.addColor(color);
-			color.r += 0.5f / (float)points.size();
-		}
-		ofPushStyle();
-		ofEnableSmoothing();
-		
-		ofSetLineWidth(4.0f);
-		line.disableColors();
-		ofSetColor(0, 0, 0);
-		line.draw();
-		
-		ofSetLineWidth(2.0f);
-		line.enableColors();
-		ofSetColor(255, 255, 255);
-		line.draw();
-		
-		ofPopStyle();
-	}
-	
 	int forceOdd(int x) {
 		return (x / 2) * 2 + 1;
 	}

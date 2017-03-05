@@ -381,6 +381,9 @@ cv::name(xMat, yMat, resultMat);\
 	/// useOptimisers refers to using techniques like pre-testing the checkerboard at low resolutions
 	bool findBoard(cv::Mat image, BoardType, cv::Size patternSize, vector<cv::Point2f> & results, bool useOptimisers = true);
 
+	/// Refine checkerboard corners. Note that all pixels inside the window should belong to the corner feature. Also the halfWindowSize is corrected for you if ofxCvMin thinks it's too large
+	bool refineCheckerboardCorners(cv::Mat image, cv::Size patternSize, vector<cv::Point2f> & corners, int desiredHalfWindowSize = 10);
+
 	ofVec2f undistortPoint(const ofVec2f &, cv::Mat cameraMatrix, cv::Mat distotionCoefficients);
 
 	float calibrateProjector(cv::Mat & cameraMatrixOut

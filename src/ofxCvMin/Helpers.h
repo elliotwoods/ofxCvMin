@@ -34,8 +34,38 @@ namespace ofxCv {
 	void drawMat(Mat& mat, float x, float y);
 	void drawMat(Mat& mat, float x, float y, float width, float height);
 	
-	void drawCorners(const vector<Point2f> &);
-	void drawCorners(const vector<ofVec2f> &);
+	template<typename VectorType>
+	void drawCorners(const vector<VectorType> & points, bool applyColor = true) {
+		ofMesh line;
+		line.setMode(ofPrimitiveMode::OF_PRIMITIVE_LINE_STRIP);
+
+		ofFloatColor color(0.5f, 0.5f, 0.5f);
+		for (auto & point : points) {
+			line.addVertex(ofVec3f(point.x, point.y));
+			line.addColor(color);
+			color.r += 0.5f / (float)points.size();
+		}
+
+		ofPushStyle();
+		{
+			ofEnableSmoothing();
+
+			ofSetLineWidth(4.0f);
+			line.disableColors();
+			if (applyColor) {
+				ofSetColor(0, 0, 0);
+			}
+			line.draw();
+
+			if (applyColor) {
+				ofSetLineWidth(2.0f);
+				line.enableColors();
+				ofSetColor(255, 255, 255);
+				line.draw();
+			}
+		}
+		ofPopStyle();
+	}
 	
 	template <class T>
 	ofVec2f findMaxLocation(T& img) {

@@ -1,4 +1,5 @@
 #include "CheckerboardUserAssist.h"
+#include "Wrappers.h"
 
 using namespace cv;
 
@@ -93,41 +94,38 @@ namespace ofxCv {
 		setMouseCallback("Board finder assistant", onMouse, &assistState);
 		imshow("Board finder assistant", image);
 		
-		//createTrackbar("blockSize", assistState.windowName, &assistState.blockSize, image.size().width, onTrackbar, &assistState);
+		bool success = false;
 
+		try {
+			waitKey(0);
 
+			auto selectedImagePortion = image(assistState.roi);
 
-		waitKey(0);
+			auto midValue = cv::mean(assistState.preview(assistState.roi));
+			cv::threshold(assistState.preview, assistState.preview, midValue[0], 255, THRESH_BINARY);
 
-		auto selectedImagePortion = image(assistState.roi);
-
-		//cv::adaptiveThreshold(selectedImagePortion, selectedImagePortion, 255, ADAPTIVE_THRESH_MEAN_C, THRESH_BINARY, assistState.blockSize * 2 + 1, 0.0);
-
-		auto midValue = cv::mean(assistState.preview(assistState.roi));
-		cv::threshold(assistState.preview, assistState.preview, midValue[0], 255, THRESH_BINARY);
-
-		
-		auto success = cv::findChessboardCorners(selectedImagePortion, patternSize, results, CV_CALIB_CB_NORMALIZE_IMAGE);
-		if (!success) {
-			//try without threshold applied
-			selectedImagePortion = image(assistState.roi);
-			success = cv::findChessboardCorners(selectedImagePortion, patternSize, results);
-		}
-
-		if (success) {
-			for (auto & result : results) {
-				result.x += assistState.roi.x;
-				result.y += assistState.roi.y;
+			success = cv::findChessboardCorners(selectedImagePortion, patternSize, results, CV_CALIB_CB_NORMALIZE_IMAGE);
+			if (!success) {
+				//try without threshold applied
+				selectedImagePortion = image(assistState.roi);
+				success = cv::findChessboardCorners(selectedImagePortion, patternSize, results);
 			}
 
-			auto subPixResults = results;
-			cv::cornerSubPix(image, subPixResults, Size(5, 5), Size(1, 1), TermCriteria(CV_TERMCRIT_ITER + CV_TERMCRIT_EPS, 50, 1e-5));
-			if (results.size() == subPixResults.size()) {
-				results = subPixResults;
-			}
-		}
+			if (success) {
+				for (auto & result : results) {
+					result.x += assistState.roi.x;
+					result.y += assistState.roi.y;
+				}
 
-		cv::destroyWindow(assistState.windowName);
+				refineCheckerboardCorners(image, patternSize, results);
+			}
+
+			cv::destroyWindow(assistState.windowName);
+		}
+		catch (cv::Exception e) {
+			cv::destroyWindow(assistState.windowName);
+			throw(e);
+		}
 
 		return success;
 	}
