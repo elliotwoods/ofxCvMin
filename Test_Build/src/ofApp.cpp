@@ -1,5 +1,7 @@
 #include "ofApp.h"
 
+#include <opencv2/aruco.hpp>
+
 using namespace ofxCv;
 using namespace cv;
 
@@ -19,6 +21,8 @@ void ofApp::update(){
 	ofxCv::imitate(this->preview, matImage);
 	ofxCv::copy(matImage, this->preview, 3);
 	this->preview.update();
+
+	auto dictionary = cv::aruco::getPredefinedDictionary(cv::aruco::DICT_6X6_250);
 }
 
 //--------------------------------------------------------------

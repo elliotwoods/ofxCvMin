@@ -240,7 +240,7 @@ namespace ofxCv {
 	bool findAsymmetricCircles(cv::Mat image, cv::Size patternSize, vector<cv::Point2f> & results, Ptr<FeatureDetector> featureDetector, int blockSize) {
 
 		if (!featureDetector) {
-			featureDetector = new SimpleBlobDetector(getDefaultFindCircleBlobDetectorParams(image));
+			featureDetector = SimpleBlobDetector::create(getDefaultFindCircleBlobDetectorParams(image));
 		}
 
 		if (blockSize == 0) {
