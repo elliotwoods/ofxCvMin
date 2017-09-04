@@ -12,6 +12,7 @@
 //
 // Copyright (C) 2000-2008, Intel Corporation, all rights reserved.
 // Copyright (C) 2009, Willow Garage Inc., all rights reserved.
+// Copyright (C) 2013, OpenCV Foundation, all rights reserved.
 // Third party copyrights are property of their respective owners.
 //
 // Redistribution and use in source and binary forms, with or without modification,
@@ -40,32 +41,8 @@
 //
 //M*/
 
-#ifndef __OPENCV_GPU_DEVICE_FUNCATTRIB_HPP_
-#define __OPENCV_GPU_DEVICE_FUNCATTRIB_HPP_
+#ifdef __OPENCV_BUILD
+#error this is a compatibility header which should not be used inside the OpenCV library
+#endif
 
-#include <cstdio>
-
-namespace cv { namespace gpu { namespace device
-{
-    template<class Func>
-    void printFuncAttrib(Func& func)
-    {
-
-        cudaFuncAttributes attrs;
-        cudaFuncGetAttributes(&attrs, func);
-
-        printf("=== Function stats ===\n");
-        printf("Name: \n");
-        printf("sharedSizeBytes    = %d\n", attrs.sharedSizeBytes);
-        printf("constSizeBytes     = %d\n", attrs.constSizeBytes);
-        printf("localSizeBytes     = %d\n", attrs.localSizeBytes);
-        printf("maxThreadsPerBlock = %d\n", attrs.maxThreadsPerBlock);
-        printf("numRegs            = %d\n", attrs.numRegs);
-        printf("ptxVersion         = %d\n", attrs.ptxVersion);
-        printf("binaryVersion      = %d\n", attrs.binaryVersion);
-        printf("\n");
-        fflush(stdout);
-    }
-}}} // namespace cv { namespace gpu { namespace device
-
-#endif  /* __OPENCV_GPU_DEVICE_FUNCATTRIB_HPP_ */
+#include "opencv2/imgproc.hpp"

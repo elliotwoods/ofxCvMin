@@ -5,6 +5,8 @@ namespace ofxCv {
 	
 	using namespace cv;
 	
+	//see notes at :
+	// https://paper.dropbox.com/doc/OpenCV-openFrameworks-transforms-v3dvp2ZIVufVZfSpqQain
 	ofMatrix4x4 makeMatrix(Mat rotation, Mat translation) {
 		Mat rot3x3;
 		if(rotation.rows == 3 && rotation.cols == 3) {
@@ -18,6 +20,22 @@ namespace ofxCv {
 											 rm[1], rm[4], rm[7], 0.0f,
 											 rm[2], rm[5], rm[8], 0.0f,
 											 tm[0], tm[1], tm[2], 1.0f);
+	}
+
+
+	void decomposeMatrix(const ofMatrix4x4 & transform, Mat & rotationVector, Mat & translation) {
+		cv::Mat mat3x3(3, 3, CV_64F);
+		for (int i = 0; i < 3; i++) {
+			for (int j = 0; j < 3; j++) {
+				mat3x3.at<double>(i, j) = transform(j, i); //transposed
+			}
+		}
+		cv::Rodrigues(mat3x3, rotationVector);
+
+		translation = cv::Mat(3, 1, CV_64F);
+		for (int i = 0; i < 3; i++) {
+			translation.at<double>(i) = transform(3, i);
+		}
 	}
 
 	//a reference : http://strawlab.org/2011/11/05/augmented-reality-with-OpenGL/#the_opengl_projection_matrix_from_hz_intrinsic_parameters

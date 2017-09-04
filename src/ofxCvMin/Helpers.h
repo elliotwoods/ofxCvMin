@@ -17,7 +17,8 @@ namespace ofxCv {
 
 	using namespace cv;
 	
-	ofMatrix4x4 makeMatrix(Mat rotation, Mat translation);
+	ofMatrix4x4 makeMatrix(Mat rotationVector, Mat translation);
+	void decomposeMatrix(const ofMatrix4x4 &, Mat & rotationVector, Mat & translation);
 	ofMatrix4x4 makeProjectionMatrix(Mat cameraMatrix, cv::Size imageSize);
 	
 	vector<Point3f> makeCheckerboardPoints(cv::Size size, float spacing, bool centered = true);
