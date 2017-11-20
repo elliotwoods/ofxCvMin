@@ -7,11 +7,12 @@
 //  copy or use the software.
 //
 //
-//                           License Agreement
+//                          License Agreement
 //                For Open Source Computer Vision Library
 //
 // Copyright (C) 2000-2008, Intel Corporation, all rights reserved.
 // Copyright (C) 2009, Willow Garage Inc., all rights reserved.
+// Copyright (C) 2013, OpenCV Foundation, all rights reserved.
 // Third party copyrights are property of their respective owners.
 //
 // Redistribution and use in source and binary forms, with or without modification,
@@ -40,28 +41,8 @@
 //
 //M*/
 
-#ifndef __OPENCV_GPU_GPU_DEVICE_STATIC_CHECK_HPP__
-#define __OPENCV_GPU_GPU_DEVICE_STATIC_CHECK_HPP__
-
-#if defined(__CUDACC__)
-    #define __OPENCV_GPU_HOST_DEVICE__ __host__ __device__ __forceinline__
-#else
-    #define __OPENCV_GPU_HOST_DEVICE__
+#ifdef __OPENCV_BUILD
+#error this is a compatibility header which should not be used inside the OpenCV library
 #endif
 
-namespace cv { namespace gpu
-{
-    namespace device
-    {
-        template<bool expr> struct Static {};
-
-        template<> struct Static<true>
-        {
-            __OPENCV_GPU_HOST_DEVICE__ static void check() {};
-        };
-    }
-}}
-
-#undef __OPENCV_GPU_HOST_DEVICE__
-
-#endif /* __OPENCV_GPU_GPU_DEVICE_STATIC_CHECK_HPP__ */
+#include "opencv2/ml.hpp"
