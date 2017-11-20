@@ -359,7 +359,7 @@ namespace ofxCv {
 		//we have to intitialise a basic camera matrix for it to start with (this will get changed by the function call calibrateCamera)
 		cameraMatrixOut = Mat::eye(3, 3, CV_64F);
 		cameraMatrixOut.at<double>(0, 0) = projectorWidth * initialThrowRatio; // default at 1.4 : 1.0f throw ratio
-		cameraMatrixOut.at<double>(1, 1) = projectorHeight * initialThrowRatio;
+		cameraMatrixOut.at<double>(1, 1) = projectorWidth * initialThrowRatio;
 		cameraMatrixOut.at<double>(0, 2) = projectorWidth / 2.0f;
 		cameraMatrixOut.at<double>(1, 2) = projectorHeight * (0.50f - initialLensOffset / 2.0f); // default at 40% lens offset
 
@@ -438,12 +438,8 @@ namespace ofxCv {
 		
 		//ensure principal point inside image
 		{
-			if (cameraMatrix.at<double>(0, 2) < 0 || cameraMatrix.at<double>(0, 2) >= size.width - 1) {
-				cameraMatrix.at<double>(0, 2) = size.width / 2.0f;
-			}
-			if (cameraMatrix.at<double>(1, 2) < 0 || cameraMatrix.at<double>(1, 2) >= size.height - 1) {
-				cameraMatrix.at<double>(1, 2) = size.height / 2.0f;
-			}
+			cameraMatrix.at<double>(0, 2) = ofClamp(cameraMatrix.at<double>(0, 2), 0.01, 0.99 * (float)size.width);
+			cameraMatrix.at<double>(1, 2) = ofClamp(cameraMatrix.at<double>(1, 2), 0.01, 0.99 * (float)size.height);
 		}
 
 		float rmsErrorTrimmed = cv::calibrateCamera(vector<vector<Point3f>>(1, trimmedPointsWorld), vector<vector<Point2f>>(1, trimmedPointsImage)
