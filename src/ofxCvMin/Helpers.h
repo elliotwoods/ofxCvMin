@@ -42,7 +42,14 @@ namespace ofxCv {
 
 		ofFloatColor color(0.5f, 0.5f, 0.5f);
 		for (auto & point : points) {
-			line.addVertex(ofVec3f(point.x, point.y));
+			auto data = (const float *)(&point);
+
+			if (sizeof(VectorType) == 3 * sizeof(float)) {
+				line.addVertex(ofVec3f(data[0], data[1], data[2]));
+			}
+			else {
+				line.addVertex(ofVec3f(data[0], data[1], 0.0f));
+			}
 			line.addColor(color);
 			color.r += 0.5f / (float)points.size();
 		}
