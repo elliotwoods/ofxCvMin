@@ -315,8 +315,6 @@ cv::name(xMat, yMat, resultMat);\
 	
 	// for contourArea() and arcLength(), see ofPolyline::getArea() and getPerimiter()
 	ofPolyline convexHull(const ofPolyline& polyline);
-	vector<cv::Vec4i> convexityDefects(const vector<cv::Point>& contour);
-	vector<cv::Vec4i> convexityDefects(const ofPolyline& polyline);
 	cv::RotatedRect minAreaRect(const ofPolyline& polyline);
 	cv::RotatedRect fitEllipse(const ofPolyline& polyline);
 	void fitLine(const ofPolyline& polyline, ofVec2f& point, ofVec2f& direction);
@@ -384,22 +382,22 @@ cv::name(xMat, yMat, resultMat);\
 	/// Refine checkerboard corners. Note that all pixels inside the window should belong to the corner feature. Also the halfWindowSize is corrected for you if ofxCvMin thinks it's too large
 	bool refineCheckerboardCorners(cv::Mat image, cv::Size patternSize, vector<cv::Point2f> & corners, int desiredHalfWindowSize = 10);
 
-	ofVec2f undistortPoint(const ofVec2f &, cv::Mat cameraMatrix, cv::Mat distotionCoefficients);
+	glm::vec2 undistortPoint(const glm::vec2 &, cv::Mat cameraMatrix, cv::Mat distotionCoefficients);
 
 	float calibrateProjector(cv::Mat & cameraMatrixOut
 		, cv::Mat & rotationOut, cv::Mat & translationOut
-		, vector<ofVec3f> world, vector<ofVec2f> projectorPoints
+		, vector<glm::vec3> world, vector<glm::vec2> projectorPoints
 		, int projectorWidth, int projectorHeight
 		, bool projectorPointsAreNormalized
 		, float initialLensOffset, float initialThrowRatio = 1.4f
-		, bool trimOutliers = false, int flags = CV_CALIB_FIX_K1 | CV_CALIB_FIX_K2 | CV_CALIB_FIX_K3 | CV_CALIB_FIX_K4 | CV_CALIB_FIX_K5 | CV_CALIB_FIX_K6 | CV_CALIB_ZERO_TANGENT_DIST | CV_CALIB_USE_INTRINSIC_GUESS | CV_CALIB_FIX_ASPECT_RATIO);
+		, bool trimOutliers = false, int flags = CALIB_FIX_K1 | CALIB_FIX_K2 | CALIB_FIX_K3 | CALIB_FIX_K4 | CALIB_FIX_K5 | CALIB_FIX_K6 | CALIB_ZERO_TANGENT_DIST | CALIB_USE_INTRINSIC_GUESS | CALIB_FIX_ASPECT_RATIO);
 
 	float calibrateProjector(ofMatrix4x4 & viewOut, ofMatrix4x4 & projectionOut
-		, vector<ofVec3f> world, vector<ofVec2f> projectorPoints
+		, vector<glm::vec3> world, vector<glm::vec2> projectorPoints
 		, int projectorWidth, int projectorHeight
 		, bool projectorPointsAreNormalized
 		, float initialLensOffset, float initialThrowRatio = 1.4f
-		, bool trimOutliers = false, int flags = CV_CALIB_FIX_K1 | CV_CALIB_FIX_K2 | CV_CALIB_FIX_K3 | CV_CALIB_FIX_K4 | CV_CALIB_FIX_K5 | CV_CALIB_FIX_K6 | CV_CALIB_ZERO_TANGENT_DIST | CV_CALIB_USE_INTRINSIC_GUESS | CV_CALIB_FIX_ASPECT_RATIO);
+		, bool trimOutliers = false, int flags = CALIB_FIX_K1 | CALIB_FIX_K2 | CALIB_FIX_K3 | CALIB_FIX_K4 | CALIB_FIX_K5 | CALIB_FIX_K6 | CALIB_ZERO_TANGENT_DIST | CALIB_USE_INTRINSIC_GUESS | CALIB_FIX_ASPECT_RATIO);
 
 	float calibrateCameraWorldRemoveOutliers(vector<Point3f> pointsWorld, vector<Point2f> pointsImage, cv::Size size, cv::Mat & cameraMatrixOut, cv::Mat & distortionCoefficientsOuts, cv::Mat & rotation, cv::Mat & translationOut, int flags, float maxError = 20.0f);
 }

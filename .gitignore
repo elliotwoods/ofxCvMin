@@ -10,7 +10,6 @@
 
 .svn/
 obj/
-bin/
 build/
 !data/
 xcuserdata/
@@ -26,8 +25,12 @@ ipch/
 *.pdb
 *.idb
 *.pch
-Debug/
-Release/
+Test_*/**/Debug/
+Test_*/**/Release/
+Test_*/**/bin/
 
 
 *~.xml
+
+#Visual Studio
+.vs/

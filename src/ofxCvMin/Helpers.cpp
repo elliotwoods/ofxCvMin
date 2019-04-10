@@ -58,19 +58,19 @@ namespace ofxCv {
 	}
 	
 	vector<Point3f> makeCheckerboardPoints(cv::Size size, float spacing, bool centered) {
-		vector<ofVec3f> corners;
-		
+		vector<glm::vec3> corners;
+
 		ofVec3f offset;
 		if (centered) {
-			offset = - ofVec3f(size.width - 1, size.height - 1, 0) * spacing * 0.5f;
+			offset = -glm::vec3(size.width - 1, size.height - 1, 0) * spacing * 0.5f;
 		}
 		else {
-			offset = ofVec3f(spacing, spacing, 0.0f); // first inner corner is 1 square in
+			offset = glm::vec3(spacing, spacing, 0.0f); // first inner corner is 1 square in
 		}
-		
-		for(int j=0; j<size.height; j++) {
-			for(int i=0; i<size.width; i++) {
-				corners.push_back(ofVec3f(i, j, 0) * spacing + offset);
+
+		for (int j = 0; j < size.height; j++) {
+			for (int i = 0; i < size.width; i++) {
+				corners.push_back(glm::vec3(i, j, 0) * spacing + offset);
 			}
 		}
 		return toCv(corners);
@@ -132,16 +132,16 @@ namespace ofxCv {
 	}
 
 	vector<Point3f> makeAsymmetricCirclePoints(cv::Size size, float spacing, bool centered) {
-		vector<ofVec3f> points;
+		vector<glm::vec3> points;
 
 		ofVec3f center;
 		if (centered) {
-			center = ofVec3f(size.width * 2.0f - 1.0f, size.height - 1.0f, 0) * spacing * 0.5f;
+			center = glm::vec3(size.width * 2.0f - 1.0f, size.height - 1.0f, 0) * spacing * 0.5f;
 		}
 
 		for (int j = 0; j<size.height; j++) {
 			for (int i = 0; i<size.width; i++) {
-				points.push_back(ofVec3f(
+				points.push_back(glm::vec3(
 					i * 2 + (j % 2),
 					j,
 					0

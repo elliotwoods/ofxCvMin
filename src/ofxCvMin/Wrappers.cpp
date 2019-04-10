@@ -52,37 +52,6 @@ namespace ofxCv {
 		return toOfPolyline(hull);
 	}
 
-	// this should be replaced by c++ 2.0 api style code once available
-	vector<cv::Vec4i> convexityDefects(const vector<cv::Point>& contour) {
-		vector<int> hullIndices;
-		convexHull(Mat(contour), hullIndices, false, false);
-		vector<cv::Vec4i> convexityDefects;
-		if (hullIndices.size() > 0 && contour.size() > 0) {
-			CvMat contourMat = cvMat(1, contour.size(), CV_32SC2, (void*)&contour[0]);
-			CvMat hullMat = cvMat(1, hullIndices.size(), CV_32SC1, (void*)&hullIndices[0]);
-			CvMemStorage* storage = cvCreateMemStorage(0);
-			CvSeq* defects = cvConvexityDefects(&contourMat, &hullMat, storage);
-			for (int i = 0; i < defects->total; i++){
-				CvConvexityDefect* cur = (CvConvexityDefect*)cvGetSeqElem(defects, i);
-				cv::Vec4i defect;
-				defect[0] = cur->depth_point->x;
-				defect[1] = cur->depth_point->y;
-				defect[2] = (cur->start->x + cur->end->x) / 2;
-				defect[3] = (cur->start->y + cur->end->y) / 2;
-				convexityDefects.push_back(defect);
-			}
-			cvReleaseMemStorage(&storage);
-		}
-		return convexityDefects;
-	}
-
-	vector<cv::Vec4i> convexityDefects(const ofPolyline& polyline) {
-		vector<cv::Point2f> contour2f = toCv(polyline);
-		vector<cv::Point2i> contour2i;
-		Mat(contour2f).copyTo(contour2i);
-		return convexityDefects(contour2i);
-	}
-
 	cv::RotatedRect minAreaRect(const ofPolyline& polyline) {
 		return minAreaRect(Mat(toCv(polyline)));
 	}
@@ -93,7 +62,7 @@ namespace ofxCv {
 
 	void fitLine(const ofPolyline& polyline, ofVec2f& point, ofVec2f& direction) {
 		Vec4f line;
-		fitLine(Mat(toCv(polyline)), line, CV_DIST_L2, 0, .01, .01);
+		fitLine(Mat(toCv(polyline)), line, DIST_L2, 0, .01, .01);
 		direction.set(line[0], line[1]);
 		point.set(line[2], line[3]);
 	}
@@ -303,7 +272,12 @@ namespace ofxCv {
 
 		auto subPixResults = corners;
 		try {
-			cv::cornerSubPix(image, subPixResults, Size(windowSize, windowSize), Size(ignoreCenterPixelsSize, ignoreCenterPixelsSize), TermCriteria(CV_TERMCRIT_ITER + CV_TERMCRIT_EPS, 50, 1e-5));
+			cv::cornerSubPix(image
+				, subPixResults
+				, Size(windowSize, windowSize)
+				, Size(ignoreCenterPixelsSize, ignoreCenterPixelsSize)
+				, TermCriteria(TermCriteria::MAX_ITER + TermCriteria::MAX_ITER, 50, 1e-5));
+
 			if (corners.size() != subPixResults.size()) {
 				return false;
 			}
@@ -337,7 +311,7 @@ namespace ofxCv {
 
 	float calibrateProjector(cv::Mat & cameraMatrixOut
 		, cv::Mat & rotationOut, cv::Mat & translationOut
-		, vector<ofVec3f> world, vector<ofVec2f> projectorPoints
+		, vector<glm::vec3> world, vector<glm::vec2> projectorPoints
 		, int projectorWidth, int projectorHeight
 		, bool projectorPointsAreNormalized
 		, float initialLensOffset, float initialThrowRatio
@@ -354,7 +328,6 @@ namespace ofxCv {
 		else {
 			projector = toCv(projectorPoints);
 		}
-		
 
 		//we have to intitialise a basic camera matrix for it to start with (this will get changed by the function call calibrateCamera)
 		cameraMatrixOut = Mat::eye(3, 3, CV_64F);
@@ -389,13 +362,26 @@ namespace ofxCv {
 	}
 
 	float calibrateProjector(ofMatrix4x4 & viewOut, ofMatrix4x4 & projectionOut
-		, vector<ofVec3f> world, vector<ofVec2f> projectorPoints
+		, vector<glm::vec3> world, vector<glm::vec2> projectorPoints
 		, int projectorWidth, int projectorHeight
 		, bool projectorPointsAreNormalized
 		, float initialLensOffset, float initialThrowRatio
 		, bool trimOutliers, int flags) {
+
 		cv::Mat cameraMatrix, rotation, translation;
-		float error = calibrateProjector(cameraMatrix, rotation, translation, world, projectorPoints, projectorWidth, projectorHeight, projectorPointsAreNormalized, initialLensOffset, initialThrowRatio, trimOutliers, flags);
+		float error = calibrateProjector(cameraMatrix
+			, rotation
+			, translation
+			, world
+			, projectorPoints
+			, projectorWidth
+			, projectorHeight
+			, projectorPointsAreNormalized
+			, initialLensOffset
+			, initialThrowRatio
+			, trimOutliers
+			, flags);
+
 		viewOut = makeMatrix(rotation, translation);
 		projectionOut = makeProjectionMatrix(cameraMatrix, cv::Size(projectorWidth, projectorHeight));
 		return error;

@@ -104,7 +104,11 @@ namespace ofxCv {
 			auto midValue = cv::mean(assistState.preview(assistState.roi));
 			cv::threshold(assistState.preview, assistState.preview, midValue[0], 255, THRESH_BINARY);
 
-			success = cv::findChessboardCorners(selectedImagePortion, patternSize, results, CV_CALIB_CB_NORMALIZE_IMAGE);
+			success = cv::findChessboardCorners(selectedImagePortion
+				, patternSize
+				, results
+				, CALIB_CB_NORMALIZE_IMAGE);
+
 			if (!success) {
 				//try without threshold applied
 				selectedImagePortion = image(assistState.roi);

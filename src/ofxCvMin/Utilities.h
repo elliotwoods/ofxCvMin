@@ -11,6 +11,7 @@
 
 #include "ofMain.h"
 #include "opencv2/opencv.hpp"
+#include <glm/glm.hpp>
 
 namespace ofxCv {
 	
@@ -149,13 +150,14 @@ const Y & toCv(const X &);\
 X & toOf(Y &);\
 const X & toOf(const Y &);
 
-	OFXCV_MATCHED_TYPE_OF_CV_HEADER(ofVec2f, Point2f);
-	OFXCV_MATCHED_TYPE_OF_CV_HEADER(ofVec3f, Point3f);
-	OFXCV_MATCHED_TYPE_OF_CV_HEADER(vector<ofVec2f>, vector<Point2f>);
-	OFXCV_MATCHED_TYPE_OF_CV_HEADER(vector<ofVec3f>, vector<Point3f>);
-	OFXCV_MATCHED_TYPE_OF_CV_HEADER(vector<vector<ofVec2f> >, vector<vector<Point2f> >);
-	OFXCV_MATCHED_TYPE_OF_CV_HEADER(vector<vector<ofVec3f> >, vector<vector<Point3f> >);
-	OFXCV_MATCHED_TYPE_OF_CV_HEADER(ofColor, Scalar);
+#define OFXCV_MATCHED_TYPE_VECTOR_HEADER(X, Y) \
+OFXCV_MATCHED_TYPE_OF_CV_HEADER(X, Y) \
+OFXCV_MATCHED_TYPE_OF_CV_HEADER(vector<X>, vector<Y>) \
+OFXCV_MATCHED_TYPE_OF_CV_HEADER(vector<vector<X>>, vector<vector<Y>>)
+
+	OFXCV_MATCHED_TYPE_VECTOR_HEADER(glm::vec2, Point2f);
+	OFXCV_MATCHED_TYPE_VECTOR_HEADER(glm::vec3, Point3f);
+	OFXCV_MATCHED_TYPE_VECTOR_HEADER(ofColor, Scalar);
 	
 	// toCv functions
 	// for conversion functions, the signature reveals the behavior:
