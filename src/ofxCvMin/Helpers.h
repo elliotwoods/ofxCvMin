@@ -17,9 +17,9 @@ namespace ofxCv {
 
 	using namespace cv;
 	
-	ofMatrix4x4 makeMatrix(Mat rotationVector, Mat translation);
-	void decomposeMatrix(const ofMatrix4x4 &, Mat & rotationVector, Mat & translation);
-	ofMatrix4x4 makeProjectionMatrix(Mat cameraMatrix, cv::Size imageSize);
+	glm::mat4 makeMatrix(Mat rotationVector, Mat translation);
+	void decomposeMatrix(const glm::mat4 &, Mat & rotationVector, Mat & translation);
+	glm::mat4 makeProjectionMatrix(Mat cameraMatrix, cv::Size imageSize);
 	
 	vector<Point3f> makeCheckerboardPoints(cv::Size size, float spacing, bool centered = true);
 	ofMesh makeCheckerboardMesh(cv::Size size, float spacing, bool centered = true);
@@ -45,10 +45,10 @@ namespace ofxCv {
 			auto data = (const float *)(&point);
 
 			if (sizeof(VectorType) == 3 * sizeof(float)) {
-				line.addVertex(ofVec3f(data[0], data[1], data[2]));
+				line.addVertex(glm::vec3(data[0], data[1], data[2]));
 			}
 			else {
-				line.addVertex(ofVec3f(data[0], data[1], 0.0f));
+				line.addVertex(glm::vec3(data[0], data[1], 0.0f));
 			}
 			line.addColor(color);
 			color.r += 0.5f / (float)points.size();
@@ -76,12 +76,12 @@ namespace ofxCv {
 	}
 	
 	template <class T>
-	ofVec2f findMaxLocation(T& img) {
+	glm::vec2 findMaxLocation(T& img) {
 		Mat mat = toCv(img);
 		double minVal, maxVal;
 		cv::Point minLoc, maxLoc;
 		minMaxLoc(mat, &minVal, &maxVal, &minLoc, &maxLoc);
-		return ofVec2f(maxLoc.x, maxLoc.y);
+		return glm::vec2(maxLoc.x, maxLoc.y);
 	}
 	
 	template <class T>
