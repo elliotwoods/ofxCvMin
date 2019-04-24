@@ -403,7 +403,7 @@ namespace ofxCv {
 		set<int> indicesToRemove;
 
 		for (int i = 0; i < pointCount; i++) {
-			auto error = toOf(projectedPoints[i] - pointsImage[i]).length();
+			auto error = glm::length(toOf(projectedPoints[i] - pointsImage[i]));
 			if (error > maxError) {
 				ofLogNotice("ofxCvMin::calibrateCameraWorldRemoveOutliers") << "Removing point [" << i << "] = [" << pointsWorld[i] << "]->[" << pointsImage[i] << "] because its error is too high [" << error << "]";
 				indicesToRemove.insert(i);
