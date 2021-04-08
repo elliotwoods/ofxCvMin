@@ -167,7 +167,7 @@ cv::name(xMat, yMat, resultMat);\
 		ofxCv::autothreshold(srcDst, srcDst, invert);
 	}
 	
-	// CV_RGB2GRAY, CV_HSV2RGB, etc. with [RGB, BGR, GRAY, HSV, HLS, XYZ, YCrCb, Lab, Luv]
+	// cv::COLOR_RGB2GRAY, CV_HSV2RGB, etc. with [RGB, BGR, GRAY, HSV, HLS, XYZ, YCrCb, Lab, Luv]
 	// you can convert whole images...
 	template <class S, class D>
 	void convertColor(S& src, D& dst, int code) {
@@ -189,7 +189,7 @@ cv::name(xMat, yMat, resultMat);\
         if(channels == 4) {
             convertColor(src, dst, CV_RGBA2GRAY);
         } else if(channels == 3) {
-            convertColor(src, dst, CV_RGB2GRAY);
+            convertColor(src, dst, cv::COLOR_RGB2GRAY);
         } else if(channels == 1) {
             copy(src, dst);
         }
