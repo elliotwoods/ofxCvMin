@@ -30,13 +30,16 @@ enum SolverType {
 enum InterpolationType
 {
     INTERP_GEO = 0,    /**<  Fast geodesic interpolation, see @cite Geistert2016 */
-    INTERP_EPIC = 1,    /**<  Edge-preserving interpolation, see @cite Revaud2015,Geistert2016. */
+    INTERP_EPIC = 1,   /**<  Edge-preserving interpolation using ximgproc::EdgeAwareInterpolator, see @cite Revaud2015,Geistert2016. */
+    INTERP_RIC = 2,    /**<  SLIC based robust interpolation using ximgproc::RICInterpolator, see @cite Hu2017. */
 };
 
 /** @brief This is used store and set up the parameters of the robust local optical flow (RLOF) algoritm.
  *
- * The RLOF is a fast local optical flow approach similar to the pyramidal iterative Lucas-Kanade method as
- * proposed by @cite Bouguet00. The implementation is derived from optflow::calcOpticalFlowPyrLK().
+ * The RLOF is a fast local optical flow approach described in @cite Senst2012 @cite Senst2013 @cite Senst2014
+ * and @cite Senst2016 similar to the pyramidal iterative Lucas-Kanade method as
+ * proposed by @cite Bouguet00. More details and experiments can be found in the following thesis @cite Senst2019.
+ * The implementation is derived from optflow::calcOpticalFlowPyrLK().
  * This RLOF implementation can be seen as an improved pyramidal iterative Lucas-Kanade and includes
  * a set of improving modules. The main improvements in respect to the pyramidal iterative Lucas-Kanade
  * are:
@@ -63,12 +66,12 @@ public:
     RLOFOpticalFlowParameter()
         :solverType(ST_BILINEAR)
         ,supportRegionType(SR_CROSS)
-        ,normSigma0(3.2f)
-        ,normSigma1(7.f)
+        ,normSigma0(std::numeric_limits<float>::max())
+        ,normSigma1(std::numeric_limits<float>::max())
         ,smallWinSize(9)
         ,largeWinSize(21)
         ,crossSegmentationThreshold(25)
-        ,maxLevel(5)
+        ,maxLevel(4)
         ,useInitialFlow(false)
         ,useIlluminationModel(true)
         ,useGlobalMotionPrior(true)
@@ -87,13 +90,13 @@ public:
     */
 
     float normSigma0;
-    /**< &sigma paramter of the shrinked Hampel norm introduced in @cite Senst2012. If
+    /**< &sigma parameter of the shrinked Hampel norm introduced in @cite Senst2012. If
      * &sigma = std::numeric_limist<float>::max() the least-square estimator will be used
      * instead of the M-estimator. Althoug M-estimator is more robust against outlier in the support
      * region the least-square can be fast in computation.
     */
     float normSigma1;
-    /**< &sigma paramter of the shrinked Hampel norm introduced in @cite Senst2012. If
+    /**< &sigma parameter of the shrinked Hampel norm introduced in @cite Senst2012. If
      * &sigma = std::numeric_limist<float>::max() the least-square estimator will be used
      * instead of the M-estimator. Althoug M-estimator is more robust against outlier in the support
      * region the least-square can be fast in computation.
@@ -148,6 +151,14 @@ public:
      *   See @cite Senst2016 for more details.
     */
 
+    //! @brief Enable M-estimator or disable and use least-square estimator.
+    /** Enables M-estimator by setting sigma parameters to (3.2, 7.0). Disabling M-estimator can reduce
+     *  runtime, while enabling can improve the accuracy.
+     *  @param val If true M-estimator is used. If false least-square estimator is used.
+     *    @see setNormSigma0, setNormSigma1
+    */
+    CV_WRAP void setUseMEstimator(bool val);
+
     CV_WRAP void setSolverType(SolverType val);
     CV_WRAP SolverType getSolverType() const;
 
@@ -197,8 +208,10 @@ public:
 /** @brief Fast dense optical flow computation based on robust local optical flow (RLOF) algorithms and sparse-to-dense interpolation
  * scheme.
  *
- * The RLOF is a fast local optical flow approach similar to the pyramidal iterative Lucas-Kanade method as
- * proposed by @cite Bouguet00. The implementation is derived from optflow::calcOpticalFlowPyrLK().
+ * The RLOF is a fast local optical flow approach described in @cite Senst2012 @cite Senst2013 @cite Senst2014
+ * and @cite Senst2016 similar to the pyramidal iterative Lucas-Kanade method as
+ * proposed by @cite Bouguet00. More details and experiments can be found in the following thesis @cite Senst2019.
+ * The implementation is derived from optflow::calcOpticalFlowPyrLK().
  *
  * The sparse-to-dense interpolation scheme allows for fast computation of dense optical flow using RLOF (see @cite Geistert2016).
  * For this scheme the following steps are applied:
@@ -211,10 +224,10 @@ public:
  * For the RLOF configuration see optflow::RLOFOpticalFlowParameter for further details.
  * Parameters have been described in @cite Senst2012 @cite Senst2013 @cite Senst2014 and @cite Senst2016.
  *
- * @note SIMD parallelization is only available when compiling with SSE4.1. If the grid size is set to (1,1) and the
- * forward backward threshold <= 0 that the dense optical flow field is purely.
- * computed with the RLOF.
+ * @note If the grid size is set to (1,1) and the forward backward threshold <= 0 than pixelwise dense optical flow field is
+ * computed by RLOF without using interpolation.
  *
+ * @note Note that in output, if no correspondences are found between \a I0 and \a I1, the \a flow is set to 0.
  * @see optflow::calcOpticalFlowDenseRLOF(), optflow::RLOFOpticalFlowParameter
 */
 class CV_EXPORTS_W DenseRLOFOpticalFlow : public DenseOpticalFlow
@@ -322,6 +335,35 @@ public:
      *    @see ximgproc::fastGlobalSmootherFilter, setUsePostProc
      */
     CV_WRAP virtual bool getUsePostProc() const = 0;
+    //! @brief enables VariationalRefinement
+    /**
+     * @see getUseVariationalRefinement
+     */
+    CV_WRAP virtual void setUseVariationalRefinement(bool val) = 0;
+    /** @copybrief setUseVariationalRefinement
+     *    @see ximgproc::fastGlobalSmootherFilter, setUsePostProc
+     */
+    CV_WRAP virtual bool getUseVariationalRefinement() const = 0;
+    //! @brief Parameter to tune the approximate size of the superpixel used for oversegmentation.
+    /**
+     * @see cv::ximgproc::createSuperpixelSLIC, cv::ximgproc::RICInterpolator
+     */
+    CV_WRAP virtual void setRICSPSize(int val) = 0;
+    /** @copybrief setRICSPSize
+    *    @see setRICSPSize
+    */
+    CV_WRAP virtual int  getRICSPSize() const = 0;
+    /** @brief Parameter to choose superpixel algorithm variant to use:
+     * - cv::ximgproc::SLICType SLIC segments image using a desired region_size (value: 100)
+     * - cv::ximgproc::SLICType SLICO will optimize using adaptive compactness factor (value: 101)
+     * - cv::ximgproc::SLICType MSLIC will optimize using manifold methods resulting in more content-sensitive superpixels (value: 102).
+     *  @see cv::ximgproc::createSuperpixelSLIC, cv::ximgproc::RICInterpolator
+    */
+    CV_WRAP virtual void setRICSLICType(int val) = 0;
+    /** @copybrief setRICSLICType
+     *    @see setRICSLICType
+     */
+    CV_WRAP virtual int  getRICSLICType() const = 0;
     //! @brief Creates instance of optflow::DenseRLOFOpticalFlow
     /**
      *    @param rlofParam see optflow::RLOFOpticalFlowParameter
@@ -331,9 +373,12 @@ public:
      *    @param epicK see setEPICK
      *    @param epicSigma see setEPICSigma
      *    @param epicLambda see setEPICLambda
+     *    @param ricSPSize see setRICSPSize
+     *    @param ricSLICType see setRICSLICType
      *    @param use_post_proc see setUsePostProc
      *    @param fgsLambda see setFgsLambda
      *    @param fgsSigma see setFgsSigma
+     *    @param use_variational_refinement see setUseVariationalRefinement
     */
     CV_WRAP static Ptr<DenseRLOFOpticalFlow> create(
         Ptr<RLOFOpticalFlowParameter> rlofParam = Ptr<RLOFOpticalFlowParameter>(),
@@ -343,15 +388,20 @@ public:
         int epicK = 128,
         float epicSigma = 0.05f,
         float epicLambda = 999.0f,
+        int ricSPSize = 15,
+        int ricSLICType = 100,
         bool use_post_proc = true,
         float fgsLambda = 500.0f,
-        float fgsSigma = 1.5f);
+        float fgsSigma = 1.5f,
+        bool use_variational_refinement = false);
 };
 
 /** @brief Class used for calculation sparse optical flow and feature tracking with robust local optical flow (RLOF) algorithms.
 *
-* The RLOF is a fast local optical flow approach similar to the pyramidal iterative Lucas-Kanade method as
-* proposed by @cite Bouguet00. The implementation is derived from optflow::calcOpticalFlowPyrLK().
+* The RLOF is a fast local optical flow approach described in @cite Senst2012 @cite Senst2013 @cite Senst2014
+ * and @cite Senst2016 similar to the pyramidal iterative Lucas-Kanade method as
+* proposed by @cite Bouguet00. More details and experiments can be found in the following thesis @cite Senst2019.
+* The implementation is derived from optflow::calcOpticalFlowPyrLK().
 *
 * For the RLOF configuration see optflow::RLOFOpticalFlowParameter for further details.
 * Parameters have been described in @cite Senst2012, @cite Senst2013, @cite Senst2014 and @cite Senst2016.
@@ -396,8 +446,10 @@ public:
 
 /** @brief Fast dense optical flow computation based on robust local optical flow (RLOF) algorithms and sparse-to-dense interpolation scheme.
  *
- * The RLOF is a fast local optical flow approach similar to the pyramidal iterative Lucas-Kanade method as
- * proposed by @cite Bouguet00. The implementation is derived from optflow::calcOpticalFlowPyrLK().
+ * The RLOF is a fast local optical flow approach described in @cite Senst2012 @cite Senst2013 @cite Senst2014
+ * and @cite Senst2016 similar to the pyramidal iterative Lucas-Kanade method as
+ * proposed by @cite Bouguet00. More details and experiments can be found in the following thesis @cite Senst2019.
+ * The implementation is derived from optflow::calcOpticalFlowPyrLK().
  *
  * The sparse-to-dense interpolation scheme allows for fast computation of dense optical flow using RLOF (see @cite Geistert2016).
  * For this scheme the following steps are applied:
@@ -426,12 +478,15 @@ public:
  * supported:
  * - **INTERP_GEO** applies the fast geodesic interpolation, see @cite Geistert2016.
  * - **INTERP_EPIC_RESIDUAL** applies the edge-preserving interpolation, see @cite Revaud2015,Geistert2016.
- * @param epicK see ximgproc::EdgeAwareInterpolator() sets the respective parameter.
- * @param epicSigma see ximgproc::EdgeAwareInterpolator() sets the respective parameter.
- * @param epicLambda see ximgproc::EdgeAwareInterpolator() sets the respective parameter.
+ * @param epicK see ximgproc::EdgeAwareInterpolator sets the respective parameter.
+ * @param epicSigma see ximgproc::EdgeAwareInterpolator sets the respective parameter.
+ * @param epicLambda see ximgproc::EdgeAwareInterpolator sets the respective parameter.
+ * @param ricSPSize  see ximgproc::RICInterpolator sets the respective parameter.
+ * @param ricSLICType see ximgproc::RICInterpolator sets the respective parameter.
  * @param use_post_proc enables ximgproc::fastGlobalSmootherFilter() parameter.
  * @param fgsLambda sets the respective ximgproc::fastGlobalSmootherFilter() parameter.
  * @param fgsSigma sets the respective ximgproc::fastGlobalSmootherFilter() parameter.
+ * @param use_variational_refinement enables VariationalRefinement
  *
  * Parameters have been described in @cite Senst2012, @cite Senst2013, @cite Senst2014, @cite Senst2016.
  * For the RLOF configuration see optflow::RLOFOpticalFlowParameter for further details.
@@ -439,6 +494,7 @@ public:
  * computed with the RLOF.
  *
  * @note SIMD parallelization is only available when compiling with SSE4.1.
+ * @note Note that in output, if no correspondences are found between \a I0 and \a I1, the \a flow is set to 0.
  *
  * @sa optflow::DenseRLOFOpticalFlow, optflow::RLOFOpticalFlowParameter
 */
@@ -447,13 +503,17 @@ CV_EXPORTS_W void calcOpticalFlowDenseRLOF(InputArray I0, InputArray I1, InputOu
     float forwardBackwardThreshold = 0, Size gridStep = Size(6, 6),
     InterpolationType interp_type = InterpolationType::INTERP_EPIC,
     int epicK = 128, float epicSigma = 0.05f, float epicLambda = 100.f,
-    bool use_post_proc = true, float fgsLambda = 500.0f, float fgsSigma = 1.5f);
+    int ricSPSize = 15, int ricSLICType = 100,
+    bool use_post_proc = true, float fgsLambda = 500.0f, float fgsSigma = 1.5f,
+    bool use_variational_refinement = false);
 
 /** @brief Calculates fast optical flow for a sparse feature set using the robust local optical flow (RLOF) similar
 * to optflow::calcOpticalFlowPyrLK().
 *
-* The RLOF is a fast local optical flow approach similar to the pyramidal iterative Lucas-Kanade method as
-* proposed by @cite Bouguet00. The implementation is derived from optflow::calcOpticalFlowPyrLK().
+* The RLOF is a fast local optical flow approach described in @cite Senst2012 @cite Senst2013 @cite Senst2014
+ * and @cite Senst2016 similar to the pyramidal iterative Lucas-Kanade method as
+* proposed by @cite Bouguet00. More details and experiments can be found in the following thesis @cite Senst2019.
+* The implementation is derived from optflow::calcOpticalFlowPyrLK().
 *
 * @param prevImg first 8-bit input image. If The cross-based RLOF is used (by selecting optflow::RLOFOpticalFlowParameter::supportRegionType
 * = SupportRegionType::SR_CROSS) image has to be a 8-bit 3 channel image.

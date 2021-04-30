@@ -9,6 +9,7 @@
 
 #include "opencv2/core.hpp"
 #include "opencv2/core/affine.hpp"
+#include <opencv2/rgbd/volume.hpp>
 
 namespace cv {
 namespace kinfu {
@@ -17,9 +18,49 @@ namespace kinfu {
 
 struct CV_EXPORTS_W Params
 {
-    /** @brief Default parameters
-    A set of parameters which provides better model quality, can be very slow.
-    */
+
+    CV_WRAP Params(){}
+
+    /**
+     * @brief Constructor for Params
+     * Sets the initial pose of the TSDF volume.
+     * @param volumeInitialPoseRot rotation matrix
+     * @param volumeInitialPoseTransl translation vector
+     */
+    CV_WRAP Params(Matx33f volumeInitialPoseRot, Vec3f volumeInitialPoseTransl)
+    {
+      setInitialVolumePose(volumeInitialPoseRot,volumeInitialPoseTransl);
+    }
+
+    /**
+     * @brief Constructor for Params
+     * Sets the initial pose of the TSDF volume.
+     * @param volumeInitialPose 4 by 4 Homogeneous Transform matrix to set the intial pose of TSDF volume
+     */
+    CV_WRAP Params(Matx44f volumeInitialPose)
+    {
+      setInitialVolumePose(volumeInitialPose);
+    }
+
+    /**
+     * @brief Set Initial Volume Pose
+     * Sets the initial pose of the TSDF volume.
+     * @param R rotation matrix
+     * @param t translation vector
+     */
+    CV_WRAP void setInitialVolumePose(Matx33f R, Vec3f t);
+
+    /**
+     * @brief Set Initial Volume Pose
+     * Sets the initial pose of the TSDF volume.
+     * @param homogen_tf 4 by 4 Homogeneous Transform matrix to set the intial pose of TSDF volume
+     */
+    CV_WRAP void setInitialVolumePose(Matx44f homogen_tf);
+
+    /**
+     * @brief Default parameters
+     * A set of parameters which provides better model quality, can be very slow.
+     */
     CV_WRAP static Ptr<Params> defaultParams();
 
     /** @brief Coarse parameters
@@ -28,12 +69,27 @@ struct CV_EXPORTS_W Params
     */
     CV_WRAP static Ptr<Params> coarseParams();
 
+    /** @brief HashTSDF parameters
+      A set of parameters suitable for use with HashTSDFVolume
+    */
+    CV_WRAP static Ptr<Params> hashTSDFParams(bool isCoarse);
+
+    /** @brief ColoredTSDF parameters
+      A set of parameters suitable for use with ColoredTSDFVolume
+    */
+    CV_WRAP static Ptr<Params> coloredTSDFParams(bool isCoarse);
+
     /** @brief frame size in pixels */
     CV_PROP_RW Size frameSize;
 
-    /** @brief camera intrinsics */
-    CV_PROP Matx33f intr;
+    /** @brief rgb frame size in pixels */
+    CV_PROP_RW kinfu::VolumeType volumeType;
 
+    /** @brief camera intrinsics */
+    CV_PROP_RW Matx33f intr;
+
+    /** @brief rgb camera intrinsics */
+    CV_PROP_RW Matx33f rgb_intr;
     /** @brief pre-scale per 1 meter for input values
 
     Typical values are:
@@ -93,17 +149,20 @@ struct CV_EXPORTS_W Params
     // float gradient_delta_factor;
 
     /** @brief light pose for rendering in meters */
-    CV_PROP Vec3f lightPose;
+    CV_PROP_RW Vec3f lightPose;
 
     /** @brief distance theshold for ICP in meters */
     CV_PROP_RW float icpDistThresh;
     /** angle threshold for ICP in radians */
     CV_PROP_RW float icpAngleThresh;
     /** number of ICP iterations for each pyramid level */
-    CV_PROP std::vector<int> icpIterations;
+    CV_PROP_RW std::vector<int> icpIterations;
 
-    // depth truncation is not used by default
-    // float icp_truncate_depth_dist; //meters
+    /** @brief Threshold for depth truncation in meters
+
+    All depth values beyond this threshold will be set to zero
+    */
+    CV_PROP_RW float truncateThreshold;
 };
 
 /** @brief KinectFusion implementation
@@ -145,11 +204,21 @@ public:
       Light pose is fixed in KinFu params.
 
         @param image resulting image
+    */
+
+    CV_WRAP virtual void render(OutputArray image) const = 0;
+
+    /** @brief Renders a volume into an image
+
+      Renders a 0-surface of TSDF using Phong shading into a CV_8UC4 Mat.
+      Light pose is fixed in KinFu params.
+
+        @param image resulting image
         @param cameraPose pose of camera to render from. If empty then render from current pose
         which is a last frame camera pose.
     */
 
-    CV_WRAP virtual void render(OutputArray image, const Matx44f& cameraPose = Matx44f::eye()) const = 0;
+    CV_WRAP virtual void render(OutputArray image, const Matx44f& cameraPose) const = 0;
 
     /** @brief Gets points and normals of current 3d mesh
 
@@ -190,7 +259,7 @@ public:
       Input image is converted to CV_32F internally if has another type.
 
     @param depth one-channel image which size and depth scale is described in algorithm's parameters
-    @return true if succeded to align new frame with current scene, false if opposite
+    @return true if succeeded to align new frame with current scene, false if opposite
     */
     CV_WRAP virtual bool update(InputArray depth) = 0;
 };

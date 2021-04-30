@@ -1,0 +1,4 @@
+files.txt
+opencv_img_hash452.lib
+opencv_ts452.lib
+opencv_world452.lib

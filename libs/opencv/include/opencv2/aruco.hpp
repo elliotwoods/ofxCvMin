@@ -99,7 +99,7 @@ enum CornerRefineMethod{
  * - maxMarkerPerimeterRate:  determine maximum perimeter for marker contour to be detected. This
  *   is defined as a rate respect to the maximum dimension of the input image (default 4.0).
  * - polygonalApproxAccuracyRate: minimum accuracy during the polygonal approximation process to
- *   determine which contours are squares.
+ *   determine which contours are squares. (default 0.03)
  * - minCornerDistanceRate: minimum distance between corners for detected markers relative to its
  *   perimeter (default 0.05)
  * - minDistanceToBorder: minimum distance of any corner to the image border for detected markers
@@ -109,7 +109,7 @@ enum CornerRefineMethod{
  *   of the two markers (default 0.05).
  * - cornerRefinementMethod: corner refinement method. (CORNER_REFINE_NONE, no refinement.
  *   CORNER_REFINE_SUBPIX, do subpixel refinement. CORNER_REFINE_CONTOUR use contour-Points,
- *   CORNER_REFINE_APRILTAG  use the AprilTag2 approach)
+ *   CORNER_REFINE_APRILTAG  use the AprilTag2 approach). (default CORNER_REFINE_NONE)
  * - cornerRefinementWinSize: window size for the corner refinement process (in pixels) (default 5).
  * - cornerRefinementMaxIterations: maximum number of iterations for stop criteria of the corner
  *   refinement process (default 30).
@@ -117,7 +117,7 @@ enum CornerRefineMethod{
  *   process (default: 0.1)
  * - markerBorderBits: number of bits of the marker border, i.e. marker border width (default 1).
  * - perspectiveRemovePixelPerCell: number of bits (per dimension) for each cell of the marker
- *   when removing the perspective (default 8).
+ *   when removing the perspective (default 4).
  * - perspectiveRemoveIgnoredMarginPerCell: width of the margin of pixels on each cell not
  *   considered for the determination of the cell bit. Represents the rate respect to the total
  *   size of the cell, i.e. perspectiveRemovePixelPerCell (default 0.13)
@@ -129,21 +129,23 @@ enum CornerRefineMethod{
  *   than 128 or not) (default 5.0)
  * - errorCorrectionRate error correction rate respect to the maximun error correction capability
  *   for each dictionary. (default 0.6).
- * - aprilTagMinClusterPixels: reject quads containing too few pixels.
- * - aprilTagMaxNmaxima: how many corner candidates to consider when segmenting a group of pixels into a quad.
+ * - aprilTagMinClusterPixels: reject quads containing too few pixels. (default 5)
+ * - aprilTagMaxNmaxima: how many corner candidates to consider when segmenting a group of pixels into a quad. (default 10)
  * - aprilTagCriticalRad: Reject quads where pairs of edges have angles that are close to straight or close to
- *   180 degrees. Zero means that no quads are rejected. (In radians).
+ *   180 degrees. Zero means that no quads are rejected. (In radians) (default 10*PI/180)
  * - aprilTagMaxLineFitMse:  When fitting lines to the contours, what is the maximum mean squared error
  *   allowed?  This is useful in rejecting contours that are far from being quad shaped; rejecting
- *   these quads "early" saves expensive decoding processing.
+ *   these quads "early" saves expensive decoding processing. (default 10.0)
  * - aprilTagMinWhiteBlackDiff: When we build our model of black & white pixels, we add an extra check that
- *   the white model must be (overall) brighter than the black model.  How much brighter? (in pixel values, [0,255]).
- * - aprilTagDeglitch:  should the thresholded image be deglitched? Only useful for very noisy images
+ *   the white model must be (overall) brighter than the black model.  How much brighter? (in pixel values, [0,255]). (default 5)
+ * - aprilTagDeglitch:  should the thresholded image be deglitched? Only useful for very noisy images. (default 0)
  * - aprilTagQuadDecimate: Detection of quads can be done on a lower-resolution image, improving speed at a
  *   cost of pose accuracy and a slight decrease in detection rate. Decoding the binary payload is still
- *   done at full resolution.
+ *   done at full resolution. (default 0.0)
  * - aprilTagQuadSigma: What Gaussian blur should be applied to the segmented image (used for quad detection?)
- *   Parameter is the standard deviation in pixels.  Very noisy images benefit from non-zero values (e.g. 0.8).
+ *   Parameter is the standard deviation in pixels.  Very noisy images benefit from non-zero values (e.g. 0.8). (default 0.0)
+ * - detectInvertedMarker: to check if there is a white marker. In order to generate a "white" marker just
+ *   invert a normal marker by using a tilde, ~markerImage. (default false)
  */
 struct CV_EXPORTS_W DetectorParameters {
 
@@ -183,6 +185,9 @@ struct CV_EXPORTS_W DetectorParameters {
     CV_PROP_RW float aprilTagMaxLineFitMse;
     CV_PROP_RW int aprilTagMinWhiteBlackDiff;
     CV_PROP_RW int aprilTagDeglitch;
+
+    // to detect white (inverted) markers
+    CV_PROP_RW bool detectInvertedMarker;
 };
 
 
@@ -257,7 +262,7 @@ CV_EXPORTS_W void estimatePoseSingleMarkers(InputArrayOfArrays corners, float ma
 /**
  * @brief Board of markers
  *
- * A board is a set of markers in the 3D space with a common cordinate system.
+ * A board is a set of markers in the 3D space with a common coordinate system.
  * The common form of a board of marker is a planar (2D) board, however any 3D layout can be used.
  * A Board object is composed by:
  * - The object points of the marker corners, i.e. their coordinates respect to the board system.
@@ -268,7 +273,7 @@ class CV_EXPORTS_W Board {
 
     public:
     /**
-    * @brief Provide way to create Board by passing nessesary data. Specially needed in Python.
+    * @brief Provide way to create Board by passing necessary data. Specially needed in Python.
     *
     * @param objPoints array of object points of all the marker corners in the board
     * @param dictionary the dictionary of markers employed for this board
@@ -292,7 +297,7 @@ class CV_EXPORTS_W Board {
 
 /**
  * @brief Planar board with grid arrangement of markers
- * More common type of board. All markers are placed in the same plane in a grid arrangment.
+ * More common type of board. All markers are placed in the same plane in a grid arrangement.
  * The board can be drawn using drawPlanarBoard() function (@sa drawPlanarBoard)
  */
 class CV_EXPORTS_W GridBoard : public Board {
@@ -349,7 +354,7 @@ class CV_EXPORTS_W GridBoard : public Board {
     // number of markers in X and Y directions
     int _markersX, _markersY;
 
-    // marker side lenght (normally in meters)
+    // marker side length (normally in meters)
     float _markerLength;
 
     // separation between markers in the grid
@@ -387,8 +392,8 @@ class CV_EXPORTS_W GridBoard : public Board {
  * Note that returning a 0 means the pose has not been estimated.
  */
 CV_EXPORTS_W int estimatePoseBoard(InputArrayOfArrays corners, InputArray ids, const Ptr<Board> &board,
-                                   InputArray cameraMatrix, InputArray distCoeffs, OutputArray rvec,
-                                   OutputArray tvec, bool useExtrinsicGuess = false);
+                                   InputArray cameraMatrix, InputArray distCoeffs, InputOutputArray rvec,
+                                   InputOutputArray tvec, bool useExtrinsicGuess = false);
 
 
 
@@ -471,6 +476,8 @@ CV_EXPORTS_W void drawDetectedMarkers(InputOutputArray image, InputArrayOfArrays
  *
  * Given the pose estimation of a marker or board, this function draws the axis of the world
  * coordinate system, i.e. the system centered on the marker/board. Useful for debugging purposes.
+ *
+ * @deprecated use cv::drawFrameAxes
  */
 CV_EXPORTS_W void drawAxis(InputOutputArray image, InputArray cameraMatrix, InputArray distCoeffs,
                            InputArray rvec, InputArray tvec, float length);

@@ -21,14 +21,23 @@ This addon does not require ofxOpenCv.
 * use sources from opencv website
 * cmake gui
 	* XCode
-	* `CMAKE_CXX_FLAGS -m32`
-	* `CMAKE_OSX_ARCHITECTURES i386`
-	* `CMAKE_OSX_DEPLOYMENT_TARGET 10.8`
-* XCode
-	* Project settings
-		* C++ Language dialect `-std=c++11`
-		* Deployment target `10.8` (probably already is)
-	* Set to release
+		* `CMAKE_CXX_FLAGS -m32`
+		* `CMAKE_OSX_ARCHITECTURES i386`
+		* `CMAKE_OSX_DEPLOYMENT_TARGET 10.8`
+		* Project settings
+			* C++ Language dialect `-std=c++11`
+			* Deployment target `10.8` (probably already is)
+		* Set to release
+	* VS (2019)
+		* BUILD_JAVA - off
+		* BUILD_PERF_TESTS - off
+		* BUILD_TESTS - off
+		* BUILD_WITH_STATIC_CRT - off
+		* BUILD_opencv_apps - off
+		* BUILD_opencv_world - on
+		* OPENCV_ENABLE_NONFREE - on
+		* OPENCV_EXTRA_MODULES_PATH - C:/dev/opencv/opencv_contrib/modules
+		* OPENCV_build_**_bindings - off
 
 A working opencv 2.4.9 build can be found at:
 * http://www.kimchiandchips.com/files/openFrameworks/opencv-2.4.9-c++11-osx-libc++-x86.zip
