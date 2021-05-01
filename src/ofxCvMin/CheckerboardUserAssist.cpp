@@ -21,8 +21,14 @@ static void redraw(AssistState & assistState) {
 	assistState.preview = 0;
 	assistState.image.copyTo(assistState.preview, assistState.mask);
 
-	auto midValue = cv::mean(assistState.preview(assistState.roi));
-	cv::threshold(assistState.preview, assistState.preview, midValue[0], 255, THRESH_BINARY);
+	try {
+		auto midValue = cv::mean(assistState.preview(assistState.roi));
+		cv::threshold(assistState.preview, assistState.preview, midValue[0], 255, THRESH_BINARY);
+	}
+	catch (...) {
+
+	}
+	
 	//cv::adaptiveThreshold(assistState.preview, assistState.preview, 255, ADAPTIVE_THRESH_MEAN_C, THRESH_BINARY, assistState.blockSize * 2 + 1, 0.0);
 	imshow(assistState.windowName, assistState.preview);
 }
@@ -72,13 +78,56 @@ namespace ofxCv {
 
 	bool findBoardWithAssistant(cv::Mat image, BoardType boardType, cv::Size patternSize, vector<cv::Point2f> & results)
 	{
-		if (boardType != BoardType::Checkerboard) {
-			ofLogError("ofxCvMin") << "findBoardWithAssist is only supported for checkerboards.";
+		auto success = findBoardWithAssistant(image, [&boardType, &patternSize, &results](cv::Mat image, vector<cv::Point2f>& results) {
+			return ofxCv::findBoard(image
+				, boardType
+				, patternSize
+				, results
+				, false);
+			}, results);
+
+		if (success && boardType == BoardType::Checkerboard) {
+			refineCheckerboardCorners(image
+				, patternSize
+				, results);
+		}
+		return success;
+	}
+
+	bool findBoardWithAssistant(cv::Mat image, std::function<bool(cv::Mat, vector<cv::Point2f>&)> findFunction, vector<cv::Point2f> & results) {
+		cv::Rect roi;
+		if (!selectROI(image, roi)) {
 			return false;
 		}
+
+		auto selectedImagePortion = image(roi);
+
+		auto midValue = cv::mean(image(roi));
+		cv::Mat thresholded;
+		cv::threshold(image, thresholded, midValue[0], 255, THRESH_BINARY);
+
+		auto success = findFunction(selectedImagePortion, results);
+
+		if (!success) {
+			//try without threshold applied
+			selectedImagePortion = image(roi);
+			success = findFunction(selectedImagePortion, results);
+		}
+
+		if (success) {
+			for (auto& result : results) {
+				result.x += roi.x;
+				result.y += roi.y;
+			}
+		}
+
+		return success;
+	}
+
+	bool selectROI(cv::Mat image, cv::Rect& roi) {
 		AssistState assistState;
 
-		assistState.windowName = "Board finder assistant";
+		assistState.windowName = "ROI Assistant";
 		assistState.imageSize = image.size();
 		assistState.image = image;
 		assistState.mask = cv::Mat::ones(image.size(), CV_8U);
@@ -91,46 +140,20 @@ namespace ofxCv {
 
 		namedWindow(assistState.windowName, WINDOW_NORMAL);
 		resizeWindow(assistState.windowName, assistState.imageSize.width / assistState.windowScale, assistState.imageSize.height / assistState.windowScale);
-		setMouseCallback("Board finder assistant", onMouse, &assistState);
-		imshow("Board finder assistant", image);
-		
+		setMouseCallback(assistState.windowName, onMouse, &assistState);
+		imshow(assistState.windowName, image);
+
 		bool success = false;
 
-		try {
-			waitKey(0);
+		auto key = waitKey(0);
+		cv::destroyWindow(assistState.windowName);
+		roi = assistState.roi;
 
-			auto selectedImagePortion = image(assistState.roi);
-
-			auto midValue = cv::mean(assistState.preview(assistState.roi));
-			cv::threshold(assistState.preview, assistState.preview, midValue[0], 255, THRESH_BINARY);
-
-			success = cv::findChessboardCorners(selectedImagePortion
-				, patternSize
-				, results
-				, CALIB_CB_NORMALIZE_IMAGE);
-
-			if (!success) {
-				//try without threshold applied
-				selectedImagePortion = image(assistState.roi);
-				success = cv::findChessboardCorners(selectedImagePortion, patternSize, results);
-			}
-
-			if (success) {
-				for (auto & result : results) {
-					result.x += assistState.roi.x;
-					result.y += assistState.roi.y;
-				}
-
-				refineCheckerboardCorners(image, patternSize, results);
-			}
-
-			cv::destroyWindow(assistState.windowName);
+		if (key == OF_KEY_ESC) {
+			return false;
 		}
-		catch (cv::Exception e) {
-			cv::destroyWindow(assistState.windowName);
-			throw(e);
+		else {
+			return true;
 		}
-
-		return success;
 	}
 }
