@@ -30,7 +30,7 @@ namespace ofxCv {
 	vector<Point3f> makeBoardPoints(BoardType, cv::Size size, float spacing, bool centered = true);
 	ofMesh makeBoardMesh(BoardType, cv::Size, float spacing, bool centered = true);
 
-	vector<Point2f> undistortPixelCoordinates(const vector<Point2f> &, cv::Mat cameraMatrix, cv::Mat distortionCoefficients);
+	vector<Point2f> undistortImagePoints(const vector<Point2f> &, cv::Mat cameraMatrix, cv::Mat distortionCoefficients);
 
 	void drawMat(Mat& mat, float x, float y);
 	void drawMat(Mat& mat, float x, float y, float width, float height);

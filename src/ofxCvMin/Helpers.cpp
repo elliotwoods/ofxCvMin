@@ -228,7 +228,7 @@ namespace ofxCv {
 		}
 	}
 	
-	vector<Point2f> undistortPixelCoordinates(const vector<Point2f> & distortedPixelCoordinates, cv::Mat cameraMatrix, cv::Mat distortionCoefficients) {
+	vector<Point2f> undistortImagePoints(const vector<Point2f> & distortedPixelCoordinates, cv::Mat cameraMatrix, cv::Mat distortionCoefficients) {
 		vector<Point2f> normalisedPoints;
 		cv::undistortPoints(distortedPixelCoordinates, normalisedPoints, cameraMatrix, distortionCoefficients);
 		auto fx = cameraMatrix.at<double>(0, 0);
