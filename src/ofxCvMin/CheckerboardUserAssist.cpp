@@ -148,6 +148,12 @@ namespace ofxCv {
 		auto key = waitKey(0);
 		cv::destroyWindow(assistState.windowName);
 		roi = assistState.roi;
+		if (roi.empty()) {
+			roi.x = 0;
+			roi.y = 0;
+			roi.width = image.cols;
+			roi.height = image.rows;
+		}
 
 		if (key == OF_KEY_ESC) {
 			return false;
