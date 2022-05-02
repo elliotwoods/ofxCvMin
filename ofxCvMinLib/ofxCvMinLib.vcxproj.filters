@@ -12,30 +12,36 @@
     <ClInclude Include="..\src\ofxCvMin.h">
       <Filter>src</Filter>
     </ClInclude>
+    <ClInclude Include="..\src\ofxCvMin\CheckerboardUserAssist.h">
+      <Filter>src\ofxCvMin</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\ofxCvMin\Helpers.h">
+      <Filter>src\ofxCvMin</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\ofxCvMin\Modals.h">
+      <Filter>src\ofxCvMin</Filter>
+    </ClInclude>
     <ClInclude Include="..\src\ofxCvMin\Utilities.h">
       <Filter>src\ofxCvMin</Filter>
     </ClInclude>
     <ClInclude Include="..\src\ofxCvMin\Wrappers.h">
       <Filter>src\ofxCvMin</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\ofxCvMin\Helpers.h">
-      <Filter>src\ofxCvMin</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\ofxCvMin\CheckerboardUserAssist.h">
-      <Filter>src\ofxCvMin</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\src\ofxCvMin\Utilities.cpp">
-      <Filter>src\ofxCvMin</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\ofxCvMin\Wrappers.cpp">
+    <ClCompile Include="..\src\ofxCvMin\CheckerboardUserAssist.cpp">
       <Filter>src\ofxCvMin</Filter>
     </ClCompile>
     <ClCompile Include="..\src\ofxCvMin\Helpers.cpp">
       <Filter>src\ofxCvMin</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\ofxCvMin\CheckerboardUserAssist.cpp">
+    <ClCompile Include="..\src\ofxCvMin\Modals.cpp">
+      <Filter>src\ofxCvMin</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\ofxCvMin\Utilities.cpp">
+      <Filter>src\ofxCvMin</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\ofxCvMin\Wrappers.cpp">
       <Filter>src\ofxCvMin</Filter>
     </ClCompile>
   </ItemGroup>

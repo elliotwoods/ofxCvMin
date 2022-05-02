@@ -11,4 +11,5 @@
 #include "ofxCvMin/Utilities.h"
 #include "ofxCvMin/Wrappers.h"
 #include "ofxCvMin/Helpers.h"
+#include "ofxCvMin/Modals.h"
 #include "ofxCvMin/CheckerboardUserAssist.h"
