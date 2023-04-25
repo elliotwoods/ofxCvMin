@@ -247,6 +247,31 @@ namespace ofxCv {
 		return undistortedPixelCoordinates;
 	}
 
+	float reprojectionError(const vector<cv::Point2f>& imagePoints
+		, const vector<cv::Point3f>& worldPoints
+		, const cv::Mat& rotationVector
+		, const cv::Mat& translation
+		, const cv::Mat& cameraMatrix
+		, const cv::Mat& distortionCoeffients)
+	{
+
+		// Reproject the world points into image space
+		vector<Point2f> reprojectedImageCoordinates;
+		cv::projectPoints(worldPoints
+			, rotationVector
+			, translation
+			, cameraMatrix
+			, distortionCoeffients
+			, reprojectedImageCoordinates);
+
+		// Take the sum of the errors
+		float reprojectionErrorSquaredSum = 0.0f;
+		for (int i = 0; i < reprojectedImageCoordinates.size(); i++) {
+			reprojectionErrorSquaredSum += glm::distance2(toOf(reprojectedImageCoordinates[i]), toOf(imagePoints[i]));
+		}
+		return sqrt(reprojectionErrorSquaredSum / (float)reprojectedImageCoordinates.size());
+	}
+
 	void drawMat(Mat& mat, float x, float y) {
 		drawMat(mat, x, y, mat.cols, mat.rows);
 	}

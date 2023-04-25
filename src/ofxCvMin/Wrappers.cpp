@@ -300,7 +300,7 @@ namespace ofxCv {
 		return true;
 	}
 
-	ofVec2f undistortPoint(const ofVec2f & distortedPoint, cv::Mat cameraMatrix, cv::Mat distotionCoefficients) {
+	glm::vec2 undistortPoint(const glm::vec2 & distortedPoint, cv::Mat cameraMatrix, cv::Mat distotionCoefficients) {
 		vector<Point2f> distortedPoints(1, toCv(distortedPoint));
 		vector<Point2f> undistortedPoints(1);
 

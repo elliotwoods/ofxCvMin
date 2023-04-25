@@ -32,6 +32,13 @@ namespace ofxCv {
 
 	vector<Point2f> undistortImagePoints(const vector<Point2f> &, cv::Mat cameraMatrix, cv::Mat distortionCoefficients);
 
+	float reprojectionError(const vector<cv::Point2f>& imagePoints
+		, const vector<cv::Point3f>& worldPoints
+		, const cv::Mat& rotationVector
+		, const cv::Mat& translation
+		, const cv::Mat& cameraMatrix
+		, const cv::Mat& distortionCoeffients);
+
 	void drawMat(Mat& mat, float x, float y);
 	void drawMat(Mat& mat, float x, float y, float width, float height);
 	
