@@ -78,7 +78,7 @@ namespace ofxCv {
 
 	bool findBoardWithAssistant(cv::Mat image, BoardType boardType, cv::Size patternSize, vector<cv::Point2f> & results)
 	{
-		auto success = findBoardWithAssistant(image, [&boardType, &patternSize, &results](cv::Mat image, vector<cv::Point2f>& results) {
+		auto success = findBoardWithAssistant(image, [&boardType, &patternSize](cv::Mat image, vector<cv::Point2f>& results) {
 			return ofxCv::findBoard(image
 				, boardType
 				, patternSize
